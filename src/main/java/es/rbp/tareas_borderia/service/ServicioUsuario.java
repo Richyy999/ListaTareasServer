@@ -76,4 +76,12 @@ public interface ServicioUsuario {
 	 *         coincidencias
 	 */
 	UsuarioBBDD findByIdAndToken(long id, String token);
+
+	/**
+	 * Busca un usuario por su id
+	 * 
+	 * @param id id del usuario a buscar
+	 * @return Usuario con el id indicado, null si no existe
+	 */
+	UsuarioBBDD findById(long id);
 }

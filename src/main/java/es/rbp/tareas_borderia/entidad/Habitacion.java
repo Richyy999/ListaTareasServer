@@ -22,13 +22,14 @@ public class Habitacion implements Serializable {
 	}
 
 	public Habitacion(HabitacionBBDD habitacionBBDD, List<Tarea> tareas) {
+		this.id = habitacionBBDD.getId();
 		this.nombre = habitacionBBDD.getNombre();
 
-		this.id = habitacionBBDD.getId();
 		this.tareas = tareas;
 	}
 
 	public Habitacion(HabitacionConfig habitacionConfig) {
+		this.id = habitacionConfig.getId();
 		this.nombre = habitacionConfig.getNombre();
 
 		this.tareas = new ArrayList<>();

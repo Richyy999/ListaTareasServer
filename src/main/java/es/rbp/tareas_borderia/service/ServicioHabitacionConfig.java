@@ -24,6 +24,14 @@ public interface ServicioHabitacionConfig {
 	List<HabitacionConfigBBDD> findAll();
 
 	/**
+	 * Busca una habitación de confoguración por su id
+	 * 
+	 * @param id id de la habitación de configuración
+	 * @return habitación de configuración con el id indicado, null si no existe
+	 */
+	HabitacionConfigBBDD findById(long id);
+
+	/**
 	 * Modifica una habitación de configuración
 	 * 
 	 * @param habitacionConfigBBDD habitación de configuración con los datos

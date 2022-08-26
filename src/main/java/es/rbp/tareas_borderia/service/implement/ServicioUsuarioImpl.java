@@ -46,6 +46,9 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 		case ACCION_VER_HABITACIONES:
 			return autorizarVerHabitaciones(usuario);
 
+		case ACCION_VER_HISTORIAL:
+			return autorizarVerHistorial(usuario);
+
 		case ACCION_ELIMINAR_HABITACION:
 			return autorizarEliminarHabitacion(usuario);
 
@@ -72,6 +75,15 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 
 		case ACCION_ELIMINAR_HABITACION_CONFIG:
 			return autorizarEliminarHabitacionConfig(usuario);
+
+		case ACCION_CREAR_HISTORIAL:
+			return autorizarCrearHistorial(usuario);
+
+		case ACCION_MODIFICAR_HISTORIAL:
+			return autorizarModificarHistorial(usuario);
+
+		case ACCION_ELIMINAR_HISTORIAL:
+			return autorizarEliminarHistorial(usuario);
 		}
 
 		return false;
@@ -167,6 +179,15 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	@Override
 	public UsuarioBBDD findByIdAndToken(long id, String token) {
 		return repo.findByIdAndToken(id, token);
+	}
+
+	@Override
+	public UsuarioBBDD findById(long id) {
+		Optional<UsuarioBBDD> optional = repo.findById(id);
+		if (optional.isEmpty())
+			return null;
+
+		return optional.get();
 	}
 
 	/**
@@ -280,6 +301,17 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si tiene autorización, false en caso contrario
 	 */
 	private boolean autorizarVerHabitaciones(UsuarioBBDD usuario) {
+		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
+		return !optional.isEmpty();
+	}
+
+	/**
+	 * Verifica si el usuario puede ver el historial
+	 * 
+	 * @param usuario usuario que quiere ver el historial
+	 * @return true si está autorizado, false en caso contrario
+	 */
+	private boolean autorizarVerHistorial(UsuarioBBDD usuario) {
 		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
 		return !optional.isEmpty();
 	}
@@ -407,6 +439,51 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si está autorizado, false en caso contrario
 	 */
 	private boolean autorizarEliminarHabitacionConfig(UsuarioBBDD usuario) {
+		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
+		if (optional.isEmpty())
+			return false;
+
+		UsuarioBBDD usuarioBBDD = optional.get();
+		return usuarioBBDD.isAdmin();
+	}
+
+	/**
+	 * verifica si un usuario puede crear un historial
+	 * 
+	 * @param usuario usuario que desea crear el historial
+	 * @return true si está autorizado, false en caso contrario
+	 */
+	private boolean autorizarCrearHistorial(UsuarioBBDD usuario) {
+		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
+		if (optional.isEmpty())
+			return false;
+
+		UsuarioBBDD usuarioBBDD = optional.get();
+		return usuarioBBDD.isAdmin();
+	}
+
+	/**
+	 * Verifica si un usuario puede modificar un historial
+	 * 
+	 * @param usuario usuario que desea modificar el historial
+	 * @return true si está autorizado, false en caso contrario
+	 */
+	private boolean autorizarModificarHistorial(UsuarioBBDD usuario) {
+		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
+		if (optional.isEmpty())
+			return false;
+
+		UsuarioBBDD usuarioBBDD = optional.get();
+		return usuarioBBDD.isAdmin();
+	}
+
+	/**
+	 * Verifica si un usuario puede eliminar un historial
+	 * 
+	 * @param usuario usuario que desea eliminar el historial
+	 * @return true si está autorizado, false en caso contrario
+	 */
+	private boolean autorizarEliminarHistorial(UsuarioBBDD usuario) {
 		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
 		if (optional.isEmpty())
 			return false;

@@ -40,25 +40,18 @@ public class ServicioTareaConfigImpl implements ServicioTareaConfig {
 
 	@Override
 	public boolean crearTareaConfig(TareaConfig tareaConfig, UsuarioBBDD usuario) {
-		List<TareaConfigBBDD> tareasConfigBBDD = repo.findByIdAndNombre(HabitacionConfigBBDD.ID_HABITACION_MUESTRA,
-				tareaConfig.getNombre());
-		if (tareasConfigBBDD.size() > 1)
+		List<TareaConfigBBDD> tareasConfigBBDD = repo
+				.findByIdHabitacionConfigAndNombre(HabitacionConfigBBDD.ID_HABITACION_MUESTRA, tareaConfig.getNombre());
+		if (tareasConfigBBDD.size() >= 1)
 			return false;
 
-		TareaConfigBBDD tareaConfigBBDD;
-		if (tareasConfigBBDD.size() == 1) {
-			tareaConfigBBDD = tareasConfigBBDD.get(0);
-			tareaConfigBBDD.setPrecio(tareaConfig.getPrecio());
-			tareaConfigBBDD.setNombre(tareaConfig.getNombre());
-			tareaConfigBBDD.setUserMod(usuario.getNombre());
-		} else {
-			tareaConfigBBDD = new TareaConfigBBDD();
-			tareaConfigBBDD.setIdHabitacionConfig(HabitacionConfigBBDD.ID_HABITACION_MUESTRA);
-			tareaConfigBBDD.setPrecio(tareaConfig.getPrecio());
-			tareaConfigBBDD.setNombre(tareaConfig.getNombre());
-			tareaConfigBBDD.setUserAlta(usuario.getNombre());
-			tareaConfigBBDD.setUserMod(usuario.getNombre());
-		}
+		TareaConfigBBDD tareaConfigBBDD = new TareaConfigBBDD();
+		tareaConfigBBDD.setIdHabitacionConfig(HabitacionConfigBBDD.ID_HABITACION_MUESTRA);
+		tareaConfigBBDD.setPrecio(tareaConfig.getPrecio());
+		tareaConfigBBDD.setNombre(tareaConfig.getNombre());
+		tareaConfigBBDD.setUserAlta(usuario.getNombre());
+		tareaConfigBBDD.setUserMod(usuario.getNombre());
+
 		TareaConfigBBDD tareaLimpiezaConfigNueva = repo.save(tareaConfigBBDD);
 		return tareaLimpiezaConfigNueva != null;
 	}

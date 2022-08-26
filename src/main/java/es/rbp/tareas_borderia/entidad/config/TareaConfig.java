@@ -29,6 +29,11 @@ public class TareaConfig implements Serializable {
 		this.precio = tareaLimpiezaConfigBBDD.getPrecio();
 
 		this.nombre = tareaLimpiezaConfigBBDD.getNombre();
+		this.userAlta = tareaLimpiezaConfigBBDD.getUserAlta();
+		this.userMod = tareaLimpiezaConfigBBDD.getUserMod();
+
+		this.fechaAlta = tareaLimpiezaConfigBBDD.getFechaAlta();
+		this.fechaMod = tareaLimpiezaConfigBBDD.getFechaMod();
 	}
 
 	public long getId() {

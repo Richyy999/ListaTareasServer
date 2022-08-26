@@ -10,5 +10,5 @@ public interface RepositorioTareaConfig extends JpaRepository<TareaConfigBBDD, L
 
 	List<TareaConfigBBDD> findByIdHabitacionConfig(long idHabitacionConfig);
 
-	List<TareaConfigBBDD> findByIdAndNombre(long id, String nombre);
+	List<TareaConfigBBDD> findByIdHabitacionConfigAndNombre(long id, String nombre);
 }

@@ -10,6 +10,7 @@ public final class Acciones {
 	public static final int ACCION_COBRAR = 13;
 	public static final int ACCION_VER_HABITACIONES = 14;
 	public static final int ACCION_ELIMINAR_HABITACION = 15;
+	public static final int ACCION_VER_HISTORIAL = 16;
 
 	public static final int ACCION_VER_TAREAS_CONFIG = 21;
 	public static final int ACCION_CREAR_TAREA_CONFIG = 22;
@@ -19,4 +20,7 @@ public final class Acciones {
 	public static final int ACCION_CREAR_HABITACION_CONFIG = 26;
 	public static final int ACCION_MODIFICAR_HABITACION_CONFIG = 27;
 	public static final int ACCION_ELIMINAR_HABITACION_CONFIG = 28;
+	public static final int ACCION_CREAR_HISTORIAL = 29;
+	public static final int ACCION_MODIFICAR_HISTORIAL = 30;
+	public static final int ACCION_ELIMINAR_HISTORIAL = 31;
 }

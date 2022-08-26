@@ -28,6 +28,11 @@ public class HabitacionConfig implements Serializable {
 		this.id = habitacionConfigBBDD.getId();
 
 		this.nombre = habitacionConfigBBDD.getNombre();
+		this.userAlta = habitacionConfigBBDD.getUserAlta();
+		this.userMod = habitacionConfigBBDD.getUserMod();
+
+		this.fechaAlta = habitacionConfigBBDD.getFechaAlta();
+		this.fechaMod = habitacionConfigBBDD.getFechaMod();
 
 		this.tareas = tareas;
 	}

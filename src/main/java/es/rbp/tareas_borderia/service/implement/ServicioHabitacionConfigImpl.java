@@ -32,7 +32,7 @@ public class ServicioHabitacionConfigImpl implements ServicioHabitacionConfig {
 
 		HabitacionConfigBBDD habitacionNueva = new HabitacionConfigBBDD();
 		habitacionNueva.setNombre(nombre);
-		habitacionNueva.setUserAlta(nombre);
+		habitacionNueva.setUserAlta(usuario.getNombre());
 		habitacionNueva.setUserMod(usuario.getNombre());
 
 		return repoHabitacionConfig.save(habitacionNueva);
@@ -46,6 +46,15 @@ public class ServicioHabitacionConfigImpl implements ServicioHabitacionConfig {
 				habitacionesConfigBBDD.remove(habitacionConfigBBDD);
 		}
 		return habitacionesConfigBBDD;
+	}
+
+	@Override
+	public HabitacionConfigBBDD findById(long id) {
+		Optional<HabitacionConfigBBDD> optional = repoHabitacionConfig.findById(id);
+		if (optional.isEmpty())
+			return null;
+
+		return optional.get();
 	}
 
 	@Override

@@ -16,11 +16,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import es.rbp.tareas_borderia.entidad.Habitacion;
+import es.rbp.tareas_borderia.entidad.Historial;
 import es.rbp.tareas_borderia.entidad.IDWrapper;
 import es.rbp.tareas_borderia.entidad.Mes;
 import es.rbp.tareas_borderia.entidad.Tarea;
+import es.rbp.tareas_borderia.entidad.Usuario;
 import es.rbp.tareas_borderia.entidad.bbdd.HabitacionBBDD;
 import es.rbp.tareas_borderia.entidad.bbdd.HabitacionConfigBBDD;
+import es.rbp.tareas_borderia.entidad.bbdd.HistorialBBDD;
 import es.rbp.tareas_borderia.entidad.bbdd.MesBBDD;
 import es.rbp.tareas_borderia.entidad.bbdd.TareaBBDD;
 import es.rbp.tareas_borderia.entidad.bbdd.TareaConfigBBDD;
@@ -30,6 +33,7 @@ import es.rbp.tareas_borderia.entidad.config.TareaConfig;
 import es.rbp.tareas_borderia.service.ServicioDeuda;
 import es.rbp.tareas_borderia.service.ServicioHabitacion;
 import es.rbp.tareas_borderia.service.ServicioHabitacionConfig;
+import es.rbp.tareas_borderia.service.ServicioHistorial;
 import es.rbp.tareas_borderia.service.ServicioMes;
 import es.rbp.tareas_borderia.service.ServicioTarea;
 import es.rbp.tareas_borderia.service.ServicioTareaConfig;
@@ -42,6 +46,7 @@ import static es.rbp.tareas_borderia.service.Acciones.ACCION_ANADIR_TAREA;
 import static es.rbp.tareas_borderia.service.Acciones.ACCION_COBRAR;
 import static es.rbp.tareas_borderia.service.Acciones.ACCION_VER_HABITACIONES;
 import static es.rbp.tareas_borderia.service.Acciones.ACCION_ELIMINAR_HABITACION;
+import static es.rbp.tareas_borderia.service.Acciones.ACCION_VER_HISTORIAL;
 
 @RestController
 @RequestMapping("/tareas")
@@ -67,6 +72,9 @@ public class ControladorTareas {
 
 	@Autowired
 	private ServicioDeuda servicioDeuda;
+
+	@Autowired
+	private ServicioHistorial servicioHistorial;
 
 	/**
 	 * Obtiene todos los meses del usuario
@@ -94,7 +102,7 @@ public class ControladorTareas {
 	 * @param token     token único del usuario para identificarlo
 	 * @return lista con todas las habitaciones con su información
 	 */
-	@GetMapping(path = "/info", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
+	@GetMapping(path = "/muestra", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
 	public ResponseEntity<List<Habitacion>> getHabitacionesMuestra(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
@@ -125,6 +133,28 @@ public class ControladorTareas {
 		}
 
 		return new ResponseEntity<List<Habitacion>>(habitaciones, HttpStatus.OK);
+	}
+
+	/**
+	 * Obtiene todos los historiales
+	 * 
+	 * @param idUsuario id del usuario que desea obtener los historiales
+	 * @param token     token único del usuario para identificarlo
+	 * @return Lista con los historiales
+	 */
+	@GetMapping(path = "/historial", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
+	public ResponseEntity<List<Historial>> getHistorial(@RequestParam(name = ID_USUARIO) Long idUsuario,
+			@RequestParam(name = "idHabitacion", required = false) Long idHabitacion,
+			@RequestHeader(name = CABECERA_TOKEN) String token) {
+		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_VER_HISTORIAL, usuarioBBDD.getId()))
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (idHabitacion == null)
+			return new ResponseEntity<List<Historial>>(getHistorial(servicioHistorial.findAll()), HttpStatus.OK);
+
+		return new ResponseEntity<List<Historial>>(
+				getHistorial(servicioHistorial.findByIdHabitacionConfig(idHabitacion)), HttpStatus.OK);
 	}
 
 	/**
@@ -179,13 +209,18 @@ public class ControladorTareas {
 	 * Añade una tarea nueva, reduciendo la deuda si la tuviese
 	 * 
 	 * @param idUsuario        id del usuario al que se le añade la tarea
+	 * @param idHabitacion     id de la habitación del historial limpiada
 	 * @param token            token único del usuario para identificarlo
 	 * @param habitacionAnadir habitación a añadir
 	 * @return lista con los meses actualizada
 	 */
-	@PostMapping(path = "/tarea", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
+	@PostMapping(path = "/anadir", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
 	public ResponseEntity<List<Mes>> anadirTarea(@RequestParam(name = ID_USUARIO) Long idUsuario,
-			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody Habitacion habitacionAnadir) {
+			@RequestParam(name = "habitacion") Long idHabitacion, @RequestHeader(name = CABECERA_TOKEN) String token,
+			@RequestBody Habitacion habitacionAnadir) {
+		if (idHabitacion == null)
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
 		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_ANADIR_TAREA, 0))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
@@ -204,6 +239,8 @@ public class ControladorTareas {
 			if (tareaLimpiezaBBDD == null)
 				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
+
+		servicioHistorial.actualizarHistorial(idHabitacion, idUsuario);
 
 		return new ResponseEntity<List<Mes>>(getMeses(idUsuario), HttpStatus.OK);
 	}
@@ -258,5 +295,37 @@ public class ControladorTareas {
 			meses.add(mes);
 		}
 		return meses;
+	}
+
+	/**
+	 * Obtiene una lista de {@link Historial} a partir de una lista de
+	 * {@link HistorialBBDD}
+	 * 
+	 * @param historialesBBDD lista de historiales a transformar
+	 * @return historial de limpieza
+	 */
+	private List<Historial> getHistorial(List<HistorialBBDD> historialesBBDD) {
+		List<Historial> historiales = new ArrayList<>();
+		for (HistorialBBDD historialBBDD : historialesBBDD) {
+			UsuarioBBDD usuarioBBDDHistorial = servicioUsuario.findById(historialBBDD.getIdUsuario());
+			Usuario usuarioHistorial = new Usuario(usuarioBBDDHistorial);
+
+			HabitacionConfigBBDD habitacionConfigBBDD = servicioHabitacionConfig
+					.findById(historialBBDD.getIdHabitacionConfig());
+
+			List<TareaConfigBBDD> tareasConfigBBDD = servicioTareaConfig
+					.findByIdHabitacionConfig(habitacionConfigBBDD.getId());
+			List<TareaConfig> tareasConfig = new ArrayList<>();
+			for (TareaConfigBBDD tareaConfigBBDD : tareasConfigBBDD) {
+				TareaConfig tareaConfig = new TareaConfig(tareaConfigBBDD);
+				tareasConfig.add(tareaConfig);
+			}
+			HabitacionConfig habitacionConfig = new HabitacionConfig(habitacionConfigBBDD, tareasConfig);
+
+			Historial historial = new Historial(historialBBDD, usuarioHistorial, habitacionConfig);
+			historiales.add(historial);
+		}
+
+		return historiales;
 	}
 }
