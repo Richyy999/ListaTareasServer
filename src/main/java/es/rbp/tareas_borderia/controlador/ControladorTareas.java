@@ -15,12 +15,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import es.rbp.tareas_borderia.entidad.Deuda;
 import es.rbp.tareas_borderia.entidad.Habitacion;
 import es.rbp.tareas_borderia.entidad.Historial;
 import es.rbp.tareas_borderia.entidad.IDWrapper;
 import es.rbp.tareas_borderia.entidad.Mes;
 import es.rbp.tareas_borderia.entidad.Tarea;
 import es.rbp.tareas_borderia.entidad.Usuario;
+import es.rbp.tareas_borderia.entidad.bbdd.DeudaBBDD;
 import es.rbp.tareas_borderia.entidad.bbdd.HabitacionBBDD;
 import es.rbp.tareas_borderia.entidad.bbdd.HabitacionConfigBBDD;
 import es.rbp.tareas_borderia.entidad.bbdd.HistorialBBDD;
@@ -47,6 +49,8 @@ import static es.rbp.tareas_borderia.service.Acciones.ACCION_COBRAR;
 import static es.rbp.tareas_borderia.service.Acciones.ACCION_VER_HABITACIONES;
 import static es.rbp.tareas_borderia.service.Acciones.ACCION_ELIMINAR_HABITACION;
 import static es.rbp.tareas_borderia.service.Acciones.ACCION_VER_HISTORIAL;
+import static es.rbp.tareas_borderia.service.Acciones.ACCION_VER_DEUDA;
+import static es.rbp.tareas_borderia.service.Acciones.ACCION_AUMENTAR_DEUDA;
 
 @RestController
 @RequestMapping("/tareas")
@@ -158,6 +162,26 @@ public class ControladorTareas {
 	}
 
 	/**
+	 * Obtiene la deuda de un usuario
+	 * 
+	 * @param idUsuario id del usuario al que pertenece la deuda
+	 * @param token     token único del usuario para identificarlo
+	 * @return deuda del usuario indicado
+	 */
+	@GetMapping(path = "/deuda", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
+	public ResponseEntity<Deuda> getDeuda(@RequestParam(name = ID_USUARIO) Long idUsuario,
+			@RequestHeader(name = CABECERA_TOKEN) String token) {
+		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_VER_DEUDA, usuarioBBDD.getId()))
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		DeudaBBDD deudaBBDD = servicioDeuda.findByIdUsuario(idUsuario);
+		Deuda deuda = new Deuda(deudaBBDD);
+
+		return new ResponseEntity<Deuda>(deuda, HttpStatus.OK);
+	}
+
+	/**
 	 * Cobra las tareas de un usuario
 	 * 
 	 * @param idUsuario id del usuairo que desea cobrar
@@ -217,10 +241,7 @@ public class ControladorTareas {
 	@PostMapping(path = "/anadir", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
 	public ResponseEntity<List<Mes>> anadirTarea(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestParam(name = "habitacion") Long idHabitacion, @RequestHeader(name = CABECERA_TOKEN) String token,
-			@RequestBody Habitacion habitacionAnadir) {
-		if (idHabitacion == null)
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-
+			@RequestBody(required = true) Habitacion habitacionAnadir) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
 		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_ANADIR_TAREA, 0))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
@@ -243,6 +264,41 @@ public class ControladorTareas {
 		servicioHistorial.actualizarHistorial(idHabitacion, idUsuario);
 
 		return new ResponseEntity<List<Mes>>(getMeses(idUsuario), HttpStatus.OK);
+	}
+
+	/**
+	 * Añade una deuda al usuario si se puede
+	 * 
+	 * @param idUsuarioid del usuario al que se le va a añadir la deuda
+	 * @param token       token único del usuario para identificarlo
+	 * @param deuda       Deuda con los datos
+	 * @return lista de meses actualizada
+	 */
+	@PostMapping(path = "/deuda/anadir", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
+	public ResponseEntity<List<Mes>> anadirDeuda(@RequestParam(name = ID_USUARIO) Long idUsuario,
+			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody Deuda deuda) {
+		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_AUMENTAR_DEUDA, idUsuario))
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		double cantidadSinCobrar = servicioTarea.getCantidadSinCobrar(usuarioBBDD.getId());
+		double cantidadDeuda = deuda.getDeuda();
+
+		if (cantidadSinCobrar > 0) {
+			if (cantidadSinCobrar >= cantidadDeuda) {
+				servicioTarea.cobrarCantidad(cantidadDeuda, usuarioBBDD.getId());
+				cantidadDeuda = 0;
+			} else {
+				servicioTarea.cobrarCantidad(cantidadSinCobrar, usuarioBBDD.getId());
+				cantidadDeuda -= cantidadSinCobrar;
+			}
+		}
+
+		DeudaBBDD deudaBBDD = servicioDeuda.anadirDeuda(usuarioBBDD.getId(), cantidadDeuda);
+		if (deudaBBDD == null)
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+		return new ResponseEntity<List<Mes>>(getMeses(usuarioBBDD.getId()), HttpStatus.OK);
 	}
 
 	/**

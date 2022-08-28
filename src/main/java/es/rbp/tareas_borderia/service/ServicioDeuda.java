@@ -26,7 +26,7 @@ public interface ServicioDeuda {
 	 * 
 	 * @param idUsuario usuario al que se le añade la deuda
 	 * @param deuda     valor de la deuda
-	 * @return deuda creada
+	 * @return deuda creada, null si hay algún dato erróneo
 	 */
 	DeudaBBDD anadirDeuda(long idUsuario, double deuda);
 

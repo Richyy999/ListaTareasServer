@@ -49,6 +49,12 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 		case ACCION_VER_HISTORIAL:
 			return autorizarVerHistorial(usuario);
 
+		case ACCION_VER_DEUDA:
+			return autorizarVerDeuda(usuario);
+
+		case ACCION_AUMENTAR_DEUDA:
+			return autorizarAumentarDeuda(usuario);
+
 		case ACCION_ELIMINAR_HABITACION:
 			return autorizarEliminarHabitacion(usuario);
 
@@ -84,6 +90,15 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 
 		case ACCION_ELIMINAR_HISTORIAL:
 			return autorizarEliminarHistorial(usuario);
+
+		case ACCION_VER_DEUDA_CONFIG:
+			return autorizarVerDeudaConfig(usuario);
+
+		case ACCION_CREAR_DEUDA_CONFIG:
+			return autorizarCrearDeudaConfig(usuario);
+
+		case ACCION_MODIFICAR_DEUDA_CONFIG:
+			return autorizarModificarDeudaConfig(usuario);
 		}
 
 		return false;
@@ -317,6 +332,28 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	}
 
 	/**
+	 * Verifica si un usuario puede ver su deuda
+	 * 
+	 * @param usuario usuario que desea ver su deuda
+	 * @return true si está autorizado, false en caso contrario
+	 */
+	private boolean autorizarVerDeuda(UsuarioBBDD usuario) {
+		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
+		return !optional.isEmpty();
+	}
+
+	/**
+	 * Verifica si el usuario puede aumentar su deuda
+	 * 
+	 * @param usuario usuario que desea aumentar su deuda
+	 * @return
+	 */
+	private boolean autorizarAumentarDeuda(UsuarioBBDD usuario) {
+		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
+		return !optional.isEmpty();
+	}
+
+	/**
 	 * Verifica si el usuario puede eliminar habitaciones
 	 * 
 	 * @param usuario usuario que desea eliminar una habitación
@@ -490,5 +527,47 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 
 		UsuarioBBDD usuarioBBDD = optional.get();
 		return usuarioBBDD.isAdmin();
+	}
+
+	/**
+	 * Verifica si un usuario puede ver la deuda de configuración
+	 * 
+	 * @param usuario usuario que desea ver la deuda de configuración
+	 * @return true si está autorizado, false en caso contrario
+	 */
+	private boolean autorizarVerDeudaConfig(UsuarioBBDD usuario) {
+		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
+		if (optional.isEmpty())
+			return false;
+
+		return optional.get().isDeveloper();
+	}
+
+	/**
+	 * Verifica si un usuario puede crear una duda de configuración
+	 * 
+	 * @param usuario usuario que desea crear una deuda de configuración
+	 * @return true si está autorizado, false en caso contrario
+	 */
+	private boolean autorizarCrearDeudaConfig(UsuarioBBDD usuario) {
+		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
+		if (optional.isEmpty())
+			return false;
+
+		return optional.get().isDeveloper();
+	}
+
+	/**
+	 * verifica si un usuario puede modificar una deuda de configuración
+	 * 
+	 * @param usuario usuario que desea modificar la deuda de configuración
+	 * @return true si está autorizado, false en caso contrario
+	 */
+	private boolean autorizarModificarDeudaConfig(UsuarioBBDD usuario) {
+		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
+		if (optional.isEmpty())
+			return false;
+
+		return optional.get().isDeveloper();
 	}
 }

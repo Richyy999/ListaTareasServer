@@ -11,6 +11,8 @@ public final class Acciones {
 	public static final int ACCION_VER_HABITACIONES = 14;
 	public static final int ACCION_ELIMINAR_HABITACION = 15;
 	public static final int ACCION_VER_HISTORIAL = 16;
+	public static final int ACCION_VER_DEUDA = 17;
+	public static final int ACCION_AUMENTAR_DEUDA = 18;
 
 	public static final int ACCION_VER_TAREAS_CONFIG = 21;
 	public static final int ACCION_CREAR_TAREA_CONFIG = 22;
@@ -23,4 +25,8 @@ public final class Acciones {
 	public static final int ACCION_CREAR_HISTORIAL = 29;
 	public static final int ACCION_MODIFICAR_HISTORIAL = 30;
 	public static final int ACCION_ELIMINAR_HISTORIAL = 31;
+
+	public static final int ACCION_CREAR_DEUDA_CONFIG = 51;
+	public static final int ACCION_MODIFICAR_DEUDA_CONFIG = 52;
+	public static final int ACCION_VER_DEUDA_CONFIG = 53;
 }

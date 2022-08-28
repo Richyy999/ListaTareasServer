@@ -14,6 +14,8 @@ public class DeudaConfig implements Serializable {
 
 	private boolean acumular;
 
+	private String userMod;
+
 	public DeudaConfig() {
 	}
 
@@ -23,6 +25,8 @@ public class DeudaConfig implements Serializable {
 		this.deudaMax = deudaConfigBBDD.getDeudaMax();
 
 		this.acumular = deudaConfigBBDD.isAcumular();
+
+		this.userMod = deudaConfigBBDD.getUserMod();
 	}
 
 	public long getId() {
@@ -47,5 +51,13 @@ public class DeudaConfig implements Serializable {
 
 	public void setAcumular(boolean acumular) {
 		this.acumular = acumular;
+	}
+
+	public String getUserMod() {
+		return userMod;
+	}
+
+	public void setUserMod(String userMod) {
+		this.userMod = userMod;
 	}
 }

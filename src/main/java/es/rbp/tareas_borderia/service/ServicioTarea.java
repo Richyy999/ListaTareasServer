@@ -53,4 +53,12 @@ public interface ServicioTarea {
 	 * @return true si se ha cobrado correctamente las tareas
 	 */
 	boolean cobrarCantidad(double cantidad, long idUsuario);
+
+	/**
+	 * Devuelve el total sin pagar de un usuario
+	 * 
+	 * @param idUsuario id del usuario del que se desea saber la cantidad sin cobrar
+	 * @return cantidad sin cobrar
+	 */
+	double getCantidadSinCobrar(long idUsuario);
 }

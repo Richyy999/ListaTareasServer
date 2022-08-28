@@ -33,8 +33,8 @@ public class ServicioTareaImpl implements ServicioTarea {
 		TareaBBDD tareaLimpiezaBBDD = new TareaBBDD();
 		tareaLimpiezaBBDD.setNombre(tareaLimpieza.getNombre());
 		tareaLimpiezaBBDD.setPrecioSinPagar(tareaLimpieza.getPrecioSinPagar());
-		tareaLimpiezaBBDD.setPrecioPagado(0);
-		tareaLimpiezaBBDD.setCobrada(false);
+		tareaLimpiezaBBDD.setPrecioPagado(tareaLimpieza.getPrecioPagado());
+		tareaLimpiezaBBDD.setCobrada(tareaLimpieza.isCobrada());
 		tareaLimpiezaBBDD.setIdHabitacion(idHabitacion);
 		return repoTareas.save(tareaLimpiezaBBDD);
 	}
@@ -90,6 +90,12 @@ public class ServicioTareaImpl implements ServicioTarea {
 		}
 
 		return true;
+	}
+
+	@Override
+	public double getCantidadSinCobrar(long idUsuario) {
+		List<TareaBBDD> tareas = getTareasSinCobrar(idUsuario);
+		return getPrecioSinPagar(tareas);
 	}
 
 	/**

@@ -36,23 +36,42 @@ public class ServicioDeudaImpl implements ServicioDeuda {
 
 		List<Tarea> tareas = habitacion.getTareas();
 		for (Tarea tarea : tareas) {
+			if (deuda == 0)
+				return;
+
 			if (deuda >= tarea.getPrecioSinPagar()) {
 				deuda -= tarea.getPrecioSinPagar();
 				tarea.setCobrada(true);
+				tarea.setPrecioPagado(tarea.getPrecioSinPagar());
+				tarea.setPrecioSinPagar(0);
 			} else if (deuda < tarea.getPrecioSinPagar()) {
+				deuda = 0;
 				double precioNuevo = tarea.getPrecioSinPagar() - deuda;
 				tarea.setPrecioSinPagar(precioNuevo);
+				tarea.setPrecioPagado(deuda);
 			}
-			if (deuda == 0)
-				return;
+
+			deudaBBDD.setDeuda(deuda);
+			repoDeuda.save(deudaBBDD);
 		}
 	}
 
 	@Override
 	public DeudaBBDD anadirDeuda(long idUsuario, double deuda) {
+		if (deuda < 0)
+			return null;
+
 		DeudaBBDD deudaBBDD = repoDeuda.findByIdUsuario(idUsuario);
-		deudaBBDD.setDeuda(deuda);
-		return repoDeuda.save(deudaBBDD);
+		if ((deudaBBDD.getDeuda() > 0 && deudaBBDD.isAcumular()) || deudaBBDD.getDeuda() == 0) {
+			double cantidadDeuda = deudaBBDD.getDeuda() + deuda;
+			if (cantidadDeuda > deudaBBDD.getDeudaMax())
+				return null;
+
+			deudaBBDD.setDeuda(cantidadDeuda);
+			return repoDeuda.save(deudaBBDD);
+		}
+
+		return null;
 	}
 
 	@Override
