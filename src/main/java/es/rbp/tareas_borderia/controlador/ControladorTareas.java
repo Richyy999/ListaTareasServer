@@ -21,7 +21,9 @@ import es.rbp.tareas_borderia.entidad.Historial;
 import es.rbp.tareas_borderia.entidad.IDWrapper;
 import es.rbp.tareas_borderia.entidad.Mes;
 import es.rbp.tareas_borderia.entidad.Tarea;
+import es.rbp.tareas_borderia.entidad.TareaEspecial;
 import es.rbp.tareas_borderia.entidad.Usuario;
+import es.rbp.tareas_borderia.entidad.bbdd.Codigo;
 import es.rbp.tareas_borderia.entidad.bbdd.DeudaBBDD;
 import es.rbp.tareas_borderia.entidad.bbdd.HabitacionBBDD;
 import es.rbp.tareas_borderia.entidad.bbdd.HabitacionConfigBBDD;
@@ -32,6 +34,7 @@ import es.rbp.tareas_borderia.entidad.bbdd.TareaConfigBBDD;
 import es.rbp.tareas_borderia.entidad.bbdd.UsuarioBBDD;
 import es.rbp.tareas_borderia.entidad.config.HabitacionConfig;
 import es.rbp.tareas_borderia.entidad.config.TareaConfig;
+import es.rbp.tareas_borderia.service.ServicioCodigo;
 import es.rbp.tareas_borderia.service.ServicioDeuda;
 import es.rbp.tareas_borderia.service.ServicioHabitacion;
 import es.rbp.tareas_borderia.service.ServicioHabitacionConfig;
@@ -79,6 +82,9 @@ public class ControladorTareas {
 
 	@Autowired
 	private ServicioHistorial servicioHistorial;
+	
+	@Autowired
+	private ServicioCodigo servicioCodigo;
 
 	/**
 	 * Obtiene todos los meses del usuario
@@ -262,6 +268,37 @@ public class ControladorTareas {
 		}
 
 		servicioHistorial.actualizarHistorial(idHabitacion, idUsuario);
+
+		return new ResponseEntity<List<Mes>>(getMeses(idUsuario), HttpStatus.OK);
+	}
+
+	@PostMapping(path = "/especial/anadir", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
+	public ResponseEntity<List<Mes>> anadirTareaEspecial(@RequestParam(name = ID_USUARIO) Long idUsuario,
+			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody TareaEspecial tareaEspecial) {
+		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_ANADIR_TAREA, 0))
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		
+		Codigo codigo = tareaEspecial.getCodigo();
+		if (servicioCodigo.findByTipoAndCodigo(codigo.getTipoCodigo(), codigo.getCodigo()) == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		
+		Habitacion habitacion = tareaEspecial.getHabitacion();
+		
+		MesBBDD mesActual = servicioMes.getMes(idUsuario);
+
+		HabitacionBBDD habitacionBBDD = servicioHabitacion.anadirHabitacion(habitacion.getNombre(),
+				mesActual.getId());
+		if (habitacionBBDD == null)
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+		servicioDeuda.reducirDeuda(idUsuario, habitacion);
+
+		for (Tarea tarea : habitacion.getTareas()) {
+			TareaBBDD tareaLimpiezaBBDD = servicioTarea.anadirTarea(habitacionBBDD.getId(), tarea);
+			if (tareaLimpiezaBBDD == null)
+				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
 
 		return new ResponseEntity<List<Mes>>(getMeses(idUsuario), HttpStatus.OK);
 	}

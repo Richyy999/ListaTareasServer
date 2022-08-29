@@ -8,8 +8,10 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "codigos")
-public class Codigos {
+@Table(name = "codigo")
+public class Codigo {
+
+	public static final String TIPO_TAREA_ESPECIAL = "TareaEspecial";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
