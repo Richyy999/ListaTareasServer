@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import es.rbp.tareas_borderia.entidad.Deuda;
 import es.rbp.tareas_borderia.entidad.Habitacion;
 import es.rbp.tareas_borderia.entidad.Tarea;
 import es.rbp.tareas_borderia.entidad.bbdd.DeudaBBDD;
@@ -76,6 +77,10 @@ public class ServicioDeudaImpl implements ServicioDeuda {
 
 	@Override
 	public void crearDeuda(long idUsuario) {
+		DeudaBBDD deuda = repoDeuda.findByIdUsuario(idUsuario);
+		if (deuda != null)
+			return;
+
 		List<DeudaConfigBBDD> deudasConfigBBDD = repoDeudaConfig.findAll();
 		DeudaBBDD deudaBBDD = new DeudaBBDD();
 		if (deudasConfigBBDD.size() == 0) {
@@ -90,5 +95,27 @@ public class ServicioDeudaImpl implements ServicioDeuda {
 		}
 		deudaBBDD.setIdUsuario(idUsuario);
 		repoDeuda.save(deudaBBDD);
+	}
+
+	@Override
+	public boolean modificarDeuda(long idUsuario, Deuda deuda) {
+		boolean actualizada = false;
+		DeudaBBDD deudaBBDD = repoDeuda.findByIdUsuario(idUsuario);
+		if (deudaBBDD == null)
+			return false;
+
+		if (deuda.getDeudaMax() > 0) {
+			deudaBBDD.setDeudaMax(deuda.getDeudaMax());
+			actualizada = true;
+		}
+		if (deuda.isAcumular() != deudaBBDD.isAcumular()) {
+			deudaBBDD.setAcumular(deuda.isAcumular());
+			actualizada = true;
+		}
+
+		if (actualizada)
+			return repoDeuda.save(deudaBBDD) != null;
+
+		return false;
 	}
 }

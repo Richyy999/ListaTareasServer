@@ -1,5 +1,8 @@
 package es.rbp.tareas_borderia.service;
 
+import java.util.List;
+
+import es.rbp.tareas_borderia.entidad.Usuario;
 import es.rbp.tareas_borderia.entidad.bbdd.UsuarioBBDD;
 
 public interface ServicioUsuario {
@@ -16,6 +19,16 @@ public interface ServicioUsuario {
 	 * @return true si tiene autorización, false en caso contrario
 	 */
 	boolean estaAutorizado(UsuarioBBDD usuario, int accion, long idAfectado);
+
+	/**
+	 * Verifica si un usuario tiene autorización para realizar una acción concreta
+	 * 
+	 * @param usuario Usuario que realiza la acción
+	 * @param accion  Acción que desea realizar el usuario
+	 * 
+	 * @return true si tiene autorización, false en caso contrario
+	 */
+	boolean estaAutorizado(UsuarioBBDD usuario, int accion);
 
 	/**
 	 * Cambia la contraseña de un usuario y actualiza el campo cambiarPasswd en
@@ -84,4 +97,19 @@ public interface ServicioUsuario {
 	 * @return Usuario con el id indicado, null si no existe
 	 */
 	UsuarioBBDD findById(long id);
+
+	/**
+	 * Busca todos los usuarios
+	 * 
+	 * @return todos los usuarios
+	 */
+	List<UsuarioBBDD> findAll();
+
+	/**
+	 * Modifica un usuario
+	 * 
+	 * @param usuario usuario con los datos actualizados
+	 * @return true si se ha modificado correctamente, false en caso contrario
+	 */
+	boolean modificarUsuario(Usuario usuario);
 }

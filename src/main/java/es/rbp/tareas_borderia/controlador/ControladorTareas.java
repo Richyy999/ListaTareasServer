@@ -82,9 +82,11 @@ public class ControladorTareas {
 
 	@Autowired
 	private ServicioHistorial servicioHistorial;
-	
+
 	@Autowired
 	private ServicioCodigo servicioCodigo;
+
+	// -------------------- TAREAS --------------------
 
 	/**
 	 * Obtiene todos los meses del usuario
@@ -97,13 +99,103 @@ public class ControladorTareas {
 	public ResponseEntity<List<Mes>> getMeses(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
-		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_OBTENER_MESES, 0))
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_OBTENER_MESES))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
 		List<Mes> meses = getMeses(idUsuario);
 
 		return new ResponseEntity<List<Mes>>(meses, HttpStatus.OK);
 	}
+
+	/**
+	 * Añade una tarea nueva, reduciendo la deuda si la tuviese
+	 * 
+	 * @param idUsuario        id del usuario al que se le añade la tarea
+	 * @param idHabitacion     id de la habitación del historial limpiada
+	 * @param token            token único del usuario para identificarlo
+	 * @param habitacionAnadir habitación a añadir
+	 * @return lista con los meses actualizada
+	 */
+	@PostMapping(path = "/anadir", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
+	public ResponseEntity<List<Mes>> anadirTarea(@RequestParam(name = ID_USUARIO) Long idUsuario,
+			@RequestParam(name = "habitacion") Long idHabitacion, @RequestHeader(name = CABECERA_TOKEN) String token,
+			@RequestBody(required = true) Habitacion habitacionAnadir) {
+		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_ANADIR_TAREA))
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		MesBBDD mesActual = servicioMes.getMes(idUsuario);
+
+		HabitacionBBDD habitacionBBDD = servicioHabitacion.anadirHabitacion(habitacionAnadir.getNombre(),
+				mesActual.getId());
+		if (habitacionBBDD == null)
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+		servicioDeuda.reducirDeuda(idUsuario, habitacionAnadir);
+
+		for (Tarea tarea : habitacionAnadir.getTareas()) {
+			TareaBBDD tareaLimpiezaBBDD = servicioTarea.anadirTarea(habitacionBBDD.getId(), tarea);
+			if (tareaLimpiezaBBDD == null)
+				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+
+		servicioHistorial.actualizarHistorial(idHabitacion, idUsuario);
+
+		return new ResponseEntity<List<Mes>>(getMeses(idUsuario), HttpStatus.OK);
+	}
+
+	@PostMapping(path = "/especial/anadir", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
+	public ResponseEntity<List<Mes>> anadirTareaEspecial(@RequestParam(name = ID_USUARIO) Long idUsuario,
+			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody TareaEspecial tareaEspecial) {
+		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_ANADIR_TAREA))
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		Codigo codigo = tareaEspecial.getCodigo();
+		if (servicioCodigo.findByTipoAndCodigo(codigo.getTipoCodigo(), codigo.getCodigo()) == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		Habitacion habitacion = tareaEspecial.getHabitacion();
+
+		MesBBDD mesActual = servicioMes.getMes(idUsuario);
+
+		HabitacionBBDD habitacionBBDD = servicioHabitacion.anadirHabitacion(habitacion.getNombre(), mesActual.getId());
+		if (habitacionBBDD == null)
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+		servicioDeuda.reducirDeuda(idUsuario, habitacion);
+
+		for (Tarea tarea : habitacion.getTareas()) {
+			TareaBBDD tareaLimpiezaBBDD = servicioTarea.anadirTarea(habitacionBBDD.getId(), tarea);
+			if (tareaLimpiezaBBDD == null)
+				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+
+		return new ResponseEntity<List<Mes>>(getMeses(idUsuario), HttpStatus.OK);
+	}
+
+	/**
+	 * Elimina una habitación de un usuario
+	 * 
+	 * @param idUsuario    id del usuario al que pertenece la habitación
+	 * @param idHabitacion id de la habitación a eliminar
+	 * @param token        token único del usuario para identificarlo
+	 * @return lista con los meses actualizada
+	 */
+	@DeleteMapping(path = "/eliminar", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
+	public ResponseEntity<List<Mes>> eliminarHabitacion(@RequestParam(name = ID_USUARIO) Long idUsuario,
+			@RequestParam(name = "habitacion") Long idHabitacion, @RequestHeader(name = CABECERA_TOKEN) String token) {
+		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_ELIMINAR_HABITACION))
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (servicioHabitacion.eliminarHabitacion(idHabitacion))
+			return new ResponseEntity<List<Mes>>(getMeses(idUsuario), HttpStatus.OK);
+
+		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+	}
+
+	// -------------------- HABITACIONES DE MUESTRA ----------
 
 	/**
 	 * Obtiene las habitaciones con toda la información de sus tareas
@@ -116,7 +208,7 @@ public class ControladorTareas {
 	public ResponseEntity<List<Habitacion>> getHabitacionesMuestra(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
-		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_VER_HABITACIONES, usuarioBBDD.getId()))
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_VER_HABITACIONES))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
 		List<HabitacionConfigBBDD> habitacionesConfigBBDD = servicioHabitacionConfig.findAll();
@@ -145,6 +237,8 @@ public class ControladorTareas {
 		return new ResponseEntity<List<Habitacion>>(habitaciones, HttpStatus.OK);
 	}
 
+	// -------------------- HISTORIAL --------------------
+
 	/**
 	 * Obtiene todos los historiales
 	 * 
@@ -157,7 +251,7 @@ public class ControladorTareas {
 			@RequestParam(name = "idHabitacion", required = false) Long idHabitacion,
 			@RequestHeader(name = CABECERA_TOKEN) String token) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
-		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_VER_HISTORIAL, usuarioBBDD.getId()))
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_VER_HISTORIAL))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
 		if (idHabitacion == null)
@@ -167,25 +261,7 @@ public class ControladorTareas {
 				getHistorial(servicioHistorial.findByIdHabitacionConfig(idHabitacion)), HttpStatus.OK);
 	}
 
-	/**
-	 * Obtiene la deuda de un usuario
-	 * 
-	 * @param idUsuario id del usuario al que pertenece la deuda
-	 * @param token     token único del usuario para identificarlo
-	 * @return deuda del usuario indicado
-	 */
-	@GetMapping(path = "/deuda", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
-	public ResponseEntity<Deuda> getDeuda(@RequestParam(name = ID_USUARIO) Long idUsuario,
-			@RequestHeader(name = CABECERA_TOKEN) String token) {
-		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
-		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_VER_DEUDA, usuarioBBDD.getId()))
-			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-
-		DeudaBBDD deudaBBDD = servicioDeuda.findByIdUsuario(idUsuario);
-		Deuda deuda = new Deuda(deudaBBDD);
-
-		return new ResponseEntity<Deuda>(deuda, HttpStatus.OK);
-	}
+	// -------------------- COBRAR --------------------
 
 	/**
 	 * Cobra las tareas de un usuario
@@ -199,7 +275,7 @@ public class ControladorTareas {
 	public ResponseEntity<List<Mes>> cobrar(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody IDWrapper ids) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
-		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_COBRAR, usuarioBBDD.getId()))
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_COBRAR))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
 		List<Long> idHabitaciones = ids.getIds();
@@ -226,7 +302,7 @@ public class ControladorTareas {
 	public ResponseEntity<List<Mes>> cobrarCantidad(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestParam(name = "cantidad") Double cantidad, @RequestHeader(name = CABECERA_TOKEN) String token) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
-		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_COBRAR, usuarioBBDD.getId()))
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_COBRAR))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
 		if (servicioTarea.cobrarCantidad(cantidad, idUsuario))
@@ -235,72 +311,27 @@ public class ControladorTareas {
 		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 	}
 
+	// -------------------- DEUDA --------------------
+
 	/**
-	 * Añade una tarea nueva, reduciendo la deuda si la tuviese
+	 * Obtiene la deuda de un usuario
 	 * 
-	 * @param idUsuario        id del usuario al que se le añade la tarea
-	 * @param idHabitacion     id de la habitación del historial limpiada
-	 * @param token            token único del usuario para identificarlo
-	 * @param habitacionAnadir habitación a añadir
-	 * @return lista con los meses actualizada
+	 * @param idUsuario  id del usuario que desea ver la deuda
+	 * @param idAfectado id del usuario al que pertenece la deuda
+	 * @param token      token único del usuario para identificarlo
+	 * @return deuda del usuario indicado
 	 */
-	@PostMapping(path = "/anadir", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
-	public ResponseEntity<List<Mes>> anadirTarea(@RequestParam(name = ID_USUARIO) Long idUsuario,
-			@RequestParam(name = "habitacion") Long idHabitacion, @RequestHeader(name = CABECERA_TOKEN) String token,
-			@RequestBody(required = true) Habitacion habitacionAnadir) {
+	@GetMapping(path = "/deuda", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
+	public ResponseEntity<Deuda> getDeuda(@RequestParam(name = ID_USUARIO) Long idUsuario,
+			@RequestParam(name = "usuario") Long idAfectado, @RequestHeader(name = CABECERA_TOKEN) String token) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
-		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_ANADIR_TAREA, 0))
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_VER_DEUDA, idAfectado))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
-		MesBBDD mesActual = servicioMes.getMes(idUsuario);
+		DeudaBBDD deudaBBDD = servicioDeuda.findByIdUsuario(idAfectado);
+		Deuda deuda = new Deuda(deudaBBDD);
 
-		HabitacionBBDD habitacionBBDD = servicioHabitacion.anadirHabitacion(habitacionAnadir.getNombre(),
-				mesActual.getId());
-		if (habitacionBBDD == null)
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-
-		servicioDeuda.reducirDeuda(idUsuario, habitacionAnadir);
-
-		for (Tarea tarea : habitacionAnadir.getTareas()) {
-			TareaBBDD tareaLimpiezaBBDD = servicioTarea.anadirTarea(habitacionBBDD.getId(), tarea);
-			if (tareaLimpiezaBBDD == null)
-				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-		}
-
-		servicioHistorial.actualizarHistorial(idHabitacion, idUsuario);
-
-		return new ResponseEntity<List<Mes>>(getMeses(idUsuario), HttpStatus.OK);
-	}
-
-	@PostMapping(path = "/especial/anadir", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
-	public ResponseEntity<List<Mes>> anadirTareaEspecial(@RequestParam(name = ID_USUARIO) Long idUsuario,
-			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody TareaEspecial tareaEspecial) {
-		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
-		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_ANADIR_TAREA, 0))
-			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-		
-		Codigo codigo = tareaEspecial.getCodigo();
-		if (servicioCodigo.findByTipoAndCodigo(codigo.getTipoCodigo(), codigo.getCodigo()) == null)
-			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-		
-		Habitacion habitacion = tareaEspecial.getHabitacion();
-		
-		MesBBDD mesActual = servicioMes.getMes(idUsuario);
-
-		HabitacionBBDD habitacionBBDD = servicioHabitacion.anadirHabitacion(habitacion.getNombre(),
-				mesActual.getId());
-		if (habitacionBBDD == null)
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-
-		servicioDeuda.reducirDeuda(idUsuario, habitacion);
-
-		for (Tarea tarea : habitacion.getTareas()) {
-			TareaBBDD tareaLimpiezaBBDD = servicioTarea.anadirTarea(habitacionBBDD.getId(), tarea);
-			if (tareaLimpiezaBBDD == null)
-				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-		}
-
-		return new ResponseEntity<List<Mes>>(getMeses(idUsuario), HttpStatus.OK);
+		return new ResponseEntity<Deuda>(deuda, HttpStatus.OK);
 	}
 
 	/**
@@ -315,7 +346,7 @@ public class ControladorTareas {
 	public ResponseEntity<List<Mes>> anadirDeuda(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody Deuda deuda) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
-		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_AUMENTAR_DEUDA, idUsuario))
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_AUMENTAR_DEUDA))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
 		double cantidadSinCobrar = servicioTarea.getCantidadSinCobrar(usuarioBBDD.getId());
@@ -338,26 +369,7 @@ public class ControladorTareas {
 		return new ResponseEntity<List<Mes>>(getMeses(usuarioBBDD.getId()), HttpStatus.OK);
 	}
 
-	/**
-	 * Elimina una habitación de un usuario
-	 * 
-	 * @param idUsuario    id del usuario al que pertenece la habitación
-	 * @param idHabitacion id de la habitación a eliminar
-	 * @param token        token único del usuario para identificarlo
-	 * @return lista con los meses actualizada
-	 */
-	@DeleteMapping(path = "/eliminar", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
-	public ResponseEntity<List<Mes>> eliminarHabitacion(@RequestParam(name = ID_USUARIO) Long idUsuario,
-			@RequestParam(name = "habitacion") Long idHabitacion, @RequestHeader(name = CABECERA_TOKEN) String token) {
-		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
-		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_ELIMINAR_HABITACION, idUsuario))
-			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-
-		if (servicioHabitacion.eliminarHabitacion(idHabitacion))
-			return new ResponseEntity<List<Mes>>(getMeses(idUsuario), HttpStatus.OK);
-
-		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-	}
+	// -------------------- METODOS PRIVADOS --------------------
 
 	/**
 	 * Obtiene todos los meses del usuario

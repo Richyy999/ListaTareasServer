@@ -31,7 +31,7 @@ public class ServicioDeudaConfigImpl implements ServicioDeudaConfig {
 	public boolean crearDeudaConfig(DeudaConfig deudaConfig, UsuarioBBDD usuario) {
 		List<DeudaConfigBBDD> deudasConfigBBDD = repo.findAll();
 		if (deudasConfigBBDD.size() >= 1)
-			return modificarDeudaConfig(deudaConfig);
+			return modificarDeudaConfig(deudaConfig, usuario);
 
 		DeudaConfigBBDD deudaConfigBBDD = new DeudaConfigBBDD();
 		deudaConfigBBDD.setAcumular(deudaConfig.isAcumular());
@@ -42,7 +42,7 @@ public class ServicioDeudaConfigImpl implements ServicioDeudaConfig {
 	}
 
 	@Override
-	public boolean modificarDeudaConfig(DeudaConfig deudaConfig) {
+	public boolean modificarDeudaConfig(DeudaConfig deudaConfig, UsuarioBBDD usuario) {
 		Optional<DeudaConfigBBDD> optional = repo.findById(deudaConfig.getId());
 		if (optional.isEmpty())
 			return false;
@@ -60,7 +60,7 @@ public class ServicioDeudaConfigImpl implements ServicioDeudaConfig {
 		}
 
 		if (actualizada) {
-			deudaConfigBBDD.setUserMod(deudaConfig.getUserMod());
+			deudaConfigBBDD.setUserMod(usuario.getNombre());
 			return repo.save(deudaConfigBBDD) != null;
 		}
 

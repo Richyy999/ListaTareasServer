@@ -28,6 +28,8 @@ public class UsuarioBBDD {
 	private boolean cambiarPasswd;
 	@Column(name = "terminos_aceptados", nullable = false)
 	private boolean terminosAceptados;
+	@Column(name = "habilitado", nullable = false)
+	private boolean habilitado;
 
 	@Column(name = "token", unique = true)
 	private String token;
@@ -81,6 +83,14 @@ public class UsuarioBBDD {
 
 	public void setTerminosAceptados(boolean terminosAceptados) {
 		this.terminosAceptados = terminosAceptados;
+	}
+
+	public boolean isHabilitado() {
+		return habilitado;
+	}
+
+	public void setHabilitado(boolean habilitado) {
+		this.habilitado = habilitado;
 	}
 
 	public String getToken() {

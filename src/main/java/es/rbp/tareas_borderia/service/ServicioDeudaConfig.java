@@ -25,8 +25,9 @@ public interface ServicioDeudaConfig {
 	/**
 	 * Modifica la deuda de configuración
 	 * 
-	 * @param deudaConfig
-	 * @return
+	 * @param deudaConfig deuda de configuración con los datos actualizados
+	 * @param usuario     usuario que modifica la deuda de configuración
+	 * @return true si se ha modificado correctamente, false en caso contrario
 	 */
-	boolean modificarDeudaConfig(DeudaConfig deudaConfig);
+	boolean modificarDeudaConfig(DeudaConfig deudaConfig, UsuarioBBDD usuario);
 }

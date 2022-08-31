@@ -14,6 +14,7 @@ public class Usuario implements Serializable {
 	private boolean developer;
 	private boolean cambiarPasswd;
 	private boolean terminosAceptados;
+	private boolean habilitado;
 
 	private String token;
 	private String nombre;
@@ -26,7 +27,9 @@ public class Usuario implements Serializable {
 
 		this.admin = usuarioBBDD.isAdmin();
 		this.developer = usuarioBBDD.isDeveloper();
+		this.cambiarPasswd = usuarioBBDD.isCambiarPasswd();
 		this.terminosAceptados = usuarioBBDD.isTerminosAceptados();
+		this.habilitado = usuarioBBDD.isHabilitado();
 
 		this.nombre = usuarioBBDD.getNombre();
 		this.token = usuarioBBDD.getToken();
@@ -70,6 +73,14 @@ public class Usuario implements Serializable {
 
 	public void setTerminosAceptados(boolean terminosAceptados) {
 		this.terminosAceptados = terminosAceptados;
+	}
+
+	public boolean isHabilitado() {
+		return habilitado;
+	}
+
+	public void setHabilitado(boolean habilitado) {
+		this.habilitado = habilitado;
 	}
 
 	public String getToken() {

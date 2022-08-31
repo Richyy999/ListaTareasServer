@@ -61,18 +61,29 @@ public class ControladorUsuarios {
 
 		UsuarioBBDD usuarioNuevo = servicioUsuario.crearUsuario(nombre, contrasena);
 		if (usuarioNuevo == null)
-			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+			return new ResponseEntity<>(HttpStatus.CONFLICT);
 
 		servicioDeuda.crearDeuda(usuarioNuevo.getId());
 
 		return new ResponseEntity<Usuario>(new Usuario(usuarioNuevo), HttpStatus.OK);
 	}
 
+	/**
+	 * Cierra la sesión de un usuario
+	 * 
+	 * @param idUsuario id del usuario que desea cerrar sesión
+	 * @param token     token único del usuario para identificarlo
+	 * @return Código HTTP con el resultado del proceso
+	 */
 	@PostMapping(path = "/logout", headers = CABECERA_TOKEN)
-	public ResponseEntity<UsuarioBBDD> logout(@RequestParam(name = ID_USUARIO) Long idUsuario,
-			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody Usuario usuario) {
+	public ResponseEntity<Void> logout(@RequestParam(name = ID_USUARIO) Long idUsuario,
+			@RequestHeader(name = CABECERA_TOKEN) String token) {
+		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
-		return null;
+		servicioUsuario.logout(usuarioBBDD.getId());
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	/**
@@ -83,7 +94,7 @@ public class ControladorUsuarios {
 	 * @param usuario   usuario que va a aceptar los términos y condiciones
 	 * @return Usuario que ha aceptado los términos y condiciones
 	 */
-	@PostMapping(path = "/aceptar_terminos", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
+	@PostMapping(path = "/aceptar-terminos", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
 	public ResponseEntity<Usuario> aceptarTerminos(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody Usuario usuario) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);

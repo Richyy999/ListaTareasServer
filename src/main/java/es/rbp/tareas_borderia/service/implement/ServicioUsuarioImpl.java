@@ -3,6 +3,7 @@ package es.rbp.tareas_borderia.service.implement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import es.rbp.tareas_borderia.entidad.Usuario;
 import es.rbp.tareas_borderia.entidad.bbdd.UsuarioBBDD;
 import es.rbp.tareas_borderia.repositorio.RepositorioUsuario;
 import es.rbp.tareas_borderia.service.ServicioUsuario;
@@ -50,7 +51,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 			return autorizarVerHistorial(usuario);
 
 		case ACCION_VER_DEUDA:
-			return autorizarVerDeuda(usuario);
+			return autorizarVerDeuda(usuario, idAfectado);
 
 		case ACCION_AUMENTAR_DEUDA:
 			return autorizarAumentarDeuda(usuario);
@@ -91,6 +92,9 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 		case ACCION_ELIMINAR_HISTORIAL:
 			return autorizarEliminarHistorial(usuario);
 
+		case ACCION_VER_CODIGOS:
+			return autorizarVerCodigos(usuario);
+
 		case ACCION_VER_DEUDA_CONFIG:
 			return autorizarVerDeudaConfig(usuario);
 
@@ -99,9 +103,32 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 
 		case ACCION_MODIFICAR_DEUDA_CONFIG:
 			return autorizarModificarDeudaConfig(usuario);
+
+		case ACCION_CREAR_CODIGOS:
+			return autorizarCrearCodigo(usuario);
+
+		case ACCION_MODIFICAR_CODIGOS:
+			return autorizarModificarCodigos(usuario);
+
+		case ACCION_ELIMINAR_CODIGOS:
+			return autorizarEliminarCodigos(usuario);
+
+		case ACCION_VER_USUARIOS:
+			return autorizarVerUsuarios(usuario);
+
+		case ACCION_MODIFICAR_USUARIOS:
+			return autorizarModificarUsuarios(usuario);
+
+		case ACCION_MODIFICAR_DEUDA:
+			return autorizarModificarDeuda(usuario);
 		}
 
 		return false;
+	}
+
+	@Override
+	public boolean estaAutorizado(UsuarioBBDD usuario, int accion) {
+		return estaAutorizado(usuario, accion, usuario.getId());
 	}
 
 	@Override
@@ -130,6 +157,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 		usuario.setAdmin(usuarios.size() == 0);
 		usuario.setDeveloper(usuarios.size() == 0);
 		usuario.setCambiarPasswd(false);
+		usuario.setHabilitado(true);
 
 		String token = generarToken();
 		usuario.setToken(token);
@@ -155,24 +183,13 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 
 	@Override
 	public UsuarioBBDD login(String nombre, String contrasena) {
-		UsuarioBBDD usuario = repo.findByNombre(nombre);
-		if (usuario == null)
-			return null;
-
-		if (usuario.getToken() != null) {
-			String token = generarToken();
-			usuario.setToken(token);
-
-			return repo.save(usuario);
-		}
-
 		if (contrasena == null)
 			return null;
 
 		String hash = hashString(contrasena);
-		usuario = repo.findByNombreAndContrasena(nombre, hash);
+		UsuarioBBDD usuario = repo.findByNombreAndContrasena(nombre, hash);
 
-		if (usuario == null)
+		if (usuario == null || !usuario.isHabilitado())
 			return null;
 
 		String token = generarToken();
@@ -203,6 +220,30 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 			return null;
 
 		return optional.get();
+	}
+
+	@Override
+	public List<UsuarioBBDD> findAll() {
+		return repo.findAll();
+	}
+
+	@Override
+	public boolean modificarUsuario(Usuario usuario) {
+		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
+		if (optional.isEmpty())
+			return false;
+
+		UsuarioBBDD usuarioBBDD = optional.get();
+		if (usuario.isAdmin() != usuarioBBDD.isAdmin())
+			usuarioBBDD.setAdmin(usuario.isAdmin());
+
+		if (usuario.isDeveloper() != usuarioBBDD.isDeveloper())
+			usuarioBBDD.setDeveloper(usuario.isDeveloper());
+
+		if (usuario.isHabilitado() != usuarioBBDD.isHabilitado())
+			usuarioBBDD.setHabilitado(usuario.isHabilitado());
+
+		return repo.save(usuarioBBDD) != null;
 	}
 
 	/**
@@ -248,6 +289,8 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 
 		return token;
 	}
+
+	// -------------------- USUARIOS --------------------
 
 	/**
 	 * Verifica si el usuario tiene permitido cobrar tareas
@@ -332,14 +375,18 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	}
 
 	/**
-	 * Verifica si un usuario puede ver su deuda
+	 * Verifica si un usuario puede ver una deuda
 	 * 
-	 * @param usuario usuario que desea ver su deuda
+	 * @param usuario    usuario que desea ver una deuda
+	 * @param idAfectado id del usuario al que pertenece la deuda
 	 * @return true si está autorizado, false en caso contrario
 	 */
-	private boolean autorizarVerDeuda(UsuarioBBDD usuario) {
+	private boolean autorizarVerDeuda(UsuarioBBDD usuario, long idAfectado) {
 		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
-		return !optional.isEmpty();
+		if (optional.isEmpty())
+			return false;
+
+		return usuario.isDeveloper() || usuario.getId() == idAfectado;
 	}
 
 	/**
@@ -363,6 +410,8 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
 		return !optional.isEmpty();
 	}
+
+	// -------------------- ADMIN --------------------
 
 	/**
 	 * Verifica si un usuario puede ver las tareas de configuración
@@ -530,6 +579,23 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	}
 
 	/**
+	 * Verifica si un usuario puede ver los códigos
+	 * 
+	 * @param usuario usuario que desea ver los códigos
+	 * @return true si está autorizado, false en caso contrario
+	 */
+	private boolean autorizarVerCodigos(UsuarioBBDD usuario) {
+		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
+		if (optional.isEmpty())
+			return false;
+
+		UsuarioBBDD usuarioBBDD = optional.get();
+		return usuarioBBDD.isAdmin();
+	}
+
+	// -------------------- DEVELOPER --------------------
+
+	/**
 	 * Verifica si un usuario puede ver la deuda de configuración
 	 * 
 	 * @param usuario usuario que desea ver la deuda de configuración
@@ -564,6 +630,90 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si está autorizado, false en caso contrario
 	 */
 	private boolean autorizarModificarDeudaConfig(UsuarioBBDD usuario) {
+		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
+		if (optional.isEmpty())
+			return false;
+
+		return optional.get().isDeveloper();
+	}
+
+	/**
+	 * Verifica si un usuario puede crear un código
+	 * 
+	 * @param usuario usuario que desea crear un código
+	 * @return true si está autorizado, false en caso contrario
+	 */
+	private boolean autorizarCrearCodigo(UsuarioBBDD usuario) {
+		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
+		if (optional.isEmpty())
+			return false;
+
+		return optional.get().isDeveloper();
+	}
+
+	/**
+	 * Verifica si un usuario puede modificar los códigos
+	 * 
+	 * @param usuario usuario que desea ver los códigos
+	 * @return true si está autorizado, false en caso contrario
+	 */
+	private boolean autorizarModificarCodigos(UsuarioBBDD usuario) {
+		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
+		if (optional.isEmpty())
+			return false;
+
+		return optional.get().isDeveloper();
+	}
+
+	/**
+	 * Verifica si un usuario puede eliminar los códigos
+	 * 
+	 * @param usuario usuario que desea eliminar los códigos
+	 * @return true si está autorizado, false en caso contrario
+	 */
+	private boolean autorizarEliminarCodigos(UsuarioBBDD usuario) {
+		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
+		if (optional.isEmpty())
+			return false;
+
+		return optional.get().isDeveloper();
+	}
+
+	/**
+	 * Verifica si un usuario puede ver los usuarios
+	 * 
+	 * @param usuario usuario que desea ver los usuarios
+	 * @return true si está autorizado, false en caso contrario
+	 */
+	private boolean autorizarVerUsuarios(UsuarioBBDD usuario) {
+		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
+		if (optional.isEmpty())
+			return false;
+
+		return optional.get().isDeveloper();
+	}
+
+	/**
+	 * Verifica si un usuario puede modificar los usuarios
+	 * 
+	 * @param usuario usuario que desea modificar los usuarios
+	 * @return true si está autorizado, false en caso contrario
+	 */
+	private boolean autorizarModificarUsuarios(UsuarioBBDD usuario) {
+		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
+		if (optional.isEmpty())
+			return false;
+
+		return optional.get().isDeveloper();
+	}
+
+	/**
+	 * Verifica si un usuario puede modificar la deuda de otro usuario
+	 * 
+	 * @param usuario usuario que desea modificar la deuda de otro usuario
+	 * @return true si está autorizado, false en caso contrario
+	 */
+	private boolean autorizarModificarDeuda(UsuarioBBDD usuario) {
 		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
 		if (optional.isEmpty())
 			return false;

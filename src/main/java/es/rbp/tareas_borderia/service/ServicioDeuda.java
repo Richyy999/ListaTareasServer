@@ -1,5 +1,6 @@
 package es.rbp.tareas_borderia.service;
 
+import es.rbp.tareas_borderia.entidad.Deuda;
 import es.rbp.tareas_borderia.entidad.Habitacion;
 import es.rbp.tareas_borderia.entidad.bbdd.DeudaBBDD;
 
@@ -36,4 +37,13 @@ public interface ServicioDeuda {
 	 * @param idUsuario id del usuario al que se le creará una deuda
 	 */
 	void crearDeuda(long idUsuario);
+
+	/**
+	 * Modifica la deuda de un usuario
+	 * 
+	 * @param idUsuario id del usuario al que pertenece la deuda
+	 * @param deuda     deuda con los datos actualizados
+	 * @return
+	 */
+	boolean modificarDeuda(long idUsuario, Deuda deuda);
 }

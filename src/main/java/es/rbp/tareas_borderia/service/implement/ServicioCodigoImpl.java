@@ -49,11 +49,27 @@ public class ServicioCodigoImpl implements ServicioCodigo {
 		if (optional.isEmpty())
 			return false;
 
+		boolean actualizado = false;
 		Codigo codigoBBDD = optional.get();
-		codigoBBDD.setCodigo(codigo.getCodigo());
-		codigoBBDD.setTipoCodigo(codigo.getTipoCodigo());
 
-		return repo.save(codigoBBDD) != null;
+		String lenCodigo = String.valueOf(codigo.getCodigo());
+		if (lenCodigo.strip().length() != 4 && codigo.getCodigo() != 0)
+			return false;
+
+		else if (codigo.getCodigo() != 0) {
+			codigoBBDD.setCodigo(codigo.getCodigo());
+			actualizado = true;
+		}
+
+		if (codigo.getTipoCodigo() != null) {
+			codigoBBDD.setTipoCodigo(codigo.getTipoCodigo());
+			actualizado = true;
+		}
+
+		if (actualizado)
+			return repo.save(codigoBBDD) != null;
+
+		return false;
 	}
 
 	@Override
