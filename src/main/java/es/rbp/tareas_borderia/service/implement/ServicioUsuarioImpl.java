@@ -299,8 +299,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si tiene autorización, false en caso contrario
 	 */
 	private boolean autorizarCobrar(UsuarioBBDD usuario) {
-		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
-		return !optional.isEmpty();
+		return existe(usuario);
 	}
 
 	/**
@@ -311,12 +310,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si está autorizado, false en caso contrario
 	 */
 	private boolean autorizarCambioPwd(UsuarioBBDD usuario, long idAfectado) {
-		long id = usuario.getId();
-
-		if (id == idAfectado || usuario.isDeveloper())
-			return true;
-
-		return false;
+		return esElMismo(usuario, idAfectado) || isDeveloper(usuario);
 	}
 
 	/**
@@ -326,8 +320,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si tiene autorización, false en caso contrario
 	 */
 	private boolean autorizarGetMeses(UsuarioBBDD usuario) {
-		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
-		return !optional.isEmpty();
+		return existe(usuario);
 	}
 
 	/**
@@ -337,8 +330,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si tiene autorización, false en caso contrario
 	 */
 	private boolean autorizarAnadirTarea(UsuarioBBDD usuario) {
-		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
-		return !optional.isEmpty();
+		return existe(usuario);
 	}
 
 	/**
@@ -348,8 +340,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si tiene autorización, false en caso contrario
 	 */
 	private boolean autorizarAceptarTerminos(UsuarioBBDD usuario) {
-		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
-		return !optional.isEmpty();
+		return existe(usuario);
 	}
 
 	/**
@@ -359,8 +350,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si tiene autorización, false en caso contrario
 	 */
 	private boolean autorizarVerHabitaciones(UsuarioBBDD usuario) {
-		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
-		return !optional.isEmpty();
+		return existe(usuario);
 	}
 
 	/**
@@ -370,8 +360,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si está autorizado, false en caso contrario
 	 */
 	private boolean autorizarVerHistorial(UsuarioBBDD usuario) {
-		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
-		return !optional.isEmpty();
+		return existe(usuario);
 	}
 
 	/**
@@ -396,8 +385,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return
 	 */
 	private boolean autorizarAumentarDeuda(UsuarioBBDD usuario) {
-		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
-		return !optional.isEmpty();
+		return existe(usuario);
 	}
 
 	/**
@@ -407,8 +395,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si tiene autorización, false en caso contrario
 	 */
 	private boolean autorizarEliminarHabitacion(UsuarioBBDD usuario) {
-		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
-		return !optional.isEmpty();
+		return existe(usuario);
 	}
 
 	// -------------------- ADMIN --------------------
@@ -420,12 +407,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si está autorizado, false en caso contrario
 	 */
 	private boolean autorizarVerTareaConfig(UsuarioBBDD usuario) {
-		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
-		if (optional.isEmpty())
-			return false;
-
-		UsuarioBBDD usuarioBBDD = optional.get();
-		return usuarioBBDD.isAdmin();
+		return isAdmin(usuario);
 	}
 
 	/**
@@ -435,12 +417,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si está autorizado, false en caso contrario
 	 */
 	private boolean autorizarCrearTareaConfig(UsuarioBBDD usuario) {
-		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
-		if (optional.isEmpty())
-			return false;
-
-		UsuarioBBDD usuarioBBDD = optional.get();
-		return usuarioBBDD.isAdmin();
+		return isAdmin(usuario);
 	}
 
 	/**
@@ -450,12 +427,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si está autorizado, false en caso contrario
 	 */
 	private boolean autorizarModificarTareaConfig(UsuarioBBDD usuario) {
-		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
-		if (optional.isEmpty())
-			return false;
-
-		UsuarioBBDD usuarioBBDD = optional.get();
-		return usuarioBBDD.isAdmin();
+		return isAdmin(usuario);
 	}
 
 	/**
@@ -465,12 +437,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si está autorizado, false en caso contrario
 	 */
 	private boolean autorizarEliminarTareaConfig(UsuarioBBDD usuario) {
-		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
-		if (optional.isEmpty())
-			return false;
-
-		UsuarioBBDD usuarioBBDD = optional.get();
-		return usuarioBBDD.isAdmin();
+		return isAdmin(usuario);
 	}
 
 	/**
@@ -480,12 +447,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si está autorizado, false en caso contrario
 	 */
 	private boolean autorizarVerHabitacionConfig(UsuarioBBDD usuario) {
-		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
-		if (optional.isEmpty())
-			return false;
-
-		UsuarioBBDD usuarioBBDD = optional.get();
-		return usuarioBBDD.isAdmin();
+		return isAdmin(usuario);
 	}
 
 	/**
@@ -495,12 +457,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si está autorizado, false en caso contrario
 	 */
 	private boolean autorizarCrearHabitacionConfig(UsuarioBBDD usuario) {
-		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
-		if (optional.isEmpty())
-			return false;
-
-		UsuarioBBDD usuarioBBDD = optional.get();
-		return usuarioBBDD.isAdmin();
+		return isAdmin(usuario);
 	}
 
 	/**
@@ -510,12 +467,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si está autorizado, false en caso contrario
 	 */
 	private boolean autorizarModificarHabitacionConfig(UsuarioBBDD usuario) {
-		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
-		if (optional.isEmpty())
-			return false;
-
-		UsuarioBBDD usuarioBBDD = optional.get();
-		return usuarioBBDD.isAdmin();
+		return isAdmin(usuario);
 	}
 
 	/**
@@ -525,12 +477,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si está autorizado, false en caso contrario
 	 */
 	private boolean autorizarEliminarHabitacionConfig(UsuarioBBDD usuario) {
-		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
-		if (optional.isEmpty())
-			return false;
-
-		UsuarioBBDD usuarioBBDD = optional.get();
-		return usuarioBBDD.isAdmin();
+		return isAdmin(usuario);
 	}
 
 	/**
@@ -540,12 +487,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si está autorizado, false en caso contrario
 	 */
 	private boolean autorizarCrearHistorial(UsuarioBBDD usuario) {
-		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
-		if (optional.isEmpty())
-			return false;
-
-		UsuarioBBDD usuarioBBDD = optional.get();
-		return usuarioBBDD.isAdmin();
+		return isAdmin(usuario);
 	}
 
 	/**
@@ -555,12 +497,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si está autorizado, false en caso contrario
 	 */
 	private boolean autorizarModificarHistorial(UsuarioBBDD usuario) {
-		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
-		if (optional.isEmpty())
-			return false;
-
-		UsuarioBBDD usuarioBBDD = optional.get();
-		return usuarioBBDD.isAdmin();
+		return isAdmin(usuario);
 	}
 
 	/**
@@ -570,12 +507,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si está autorizado, false en caso contrario
 	 */
 	private boolean autorizarEliminarHistorial(UsuarioBBDD usuario) {
-		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
-		if (optional.isEmpty())
-			return false;
-
-		UsuarioBBDD usuarioBBDD = optional.get();
-		return usuarioBBDD.isAdmin();
+		return isAdmin(usuario);
 	}
 
 	/**
@@ -585,12 +517,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si está autorizado, false en caso contrario
 	 */
 	private boolean autorizarVerCodigos(UsuarioBBDD usuario) {
-		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
-		if (optional.isEmpty())
-			return false;
-
-		UsuarioBBDD usuarioBBDD = optional.get();
-		return usuarioBBDD.isAdmin();
+		return isAdmin(usuario);
 	}
 
 	// -------------------- DEVELOPER --------------------
@@ -602,11 +529,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si está autorizado, false en caso contrario
 	 */
 	private boolean autorizarVerDeudaConfig(UsuarioBBDD usuario) {
-		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
-		if (optional.isEmpty())
-			return false;
-
-		return optional.get().isDeveloper();
+		return isDeveloper(usuario);
 	}
 
 	/**
@@ -616,11 +539,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si está autorizado, false en caso contrario
 	 */
 	private boolean autorizarCrearDeudaConfig(UsuarioBBDD usuario) {
-		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
-		if (optional.isEmpty())
-			return false;
-
-		return optional.get().isDeveloper();
+		return isDeveloper(usuario);
 	}
 
 	/**
@@ -630,11 +549,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si está autorizado, false en caso contrario
 	 */
 	private boolean autorizarModificarDeudaConfig(UsuarioBBDD usuario) {
-		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
-		if (optional.isEmpty())
-			return false;
-
-		return optional.get().isDeveloper();
+		return isDeveloper(usuario);
 	}
 
 	/**
@@ -644,11 +559,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si está autorizado, false en caso contrario
 	 */
 	private boolean autorizarCrearCodigo(UsuarioBBDD usuario) {
-		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
-		if (optional.isEmpty())
-			return false;
-
-		return optional.get().isDeveloper();
+		return isDeveloper(usuario);
 	}
 
 	/**
@@ -658,11 +569,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si está autorizado, false en caso contrario
 	 */
 	private boolean autorizarModificarCodigos(UsuarioBBDD usuario) {
-		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
-		if (optional.isEmpty())
-			return false;
-
-		return optional.get().isDeveloper();
+		return isDeveloper(usuario);
 	}
 
 	/**
@@ -672,11 +579,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si está autorizado, false en caso contrario
 	 */
 	private boolean autorizarEliminarCodigos(UsuarioBBDD usuario) {
-		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
-		if (optional.isEmpty())
-			return false;
-
-		return optional.get().isDeveloper();
+		return isDeveloper(usuario);
 	}
 
 	/**
@@ -686,11 +589,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si está autorizado, false en caso contrario
 	 */
 	private boolean autorizarVerUsuarios(UsuarioBBDD usuario) {
-		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
-		if (optional.isEmpty())
-			return false;
-
-		return optional.get().isDeveloper();
+		return isDeveloper(usuario);
 	}
 
 	/**
@@ -700,11 +599,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si está autorizado, false en caso contrario
 	 */
 	private boolean autorizarModificarUsuarios(UsuarioBBDD usuario) {
-		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
-		if (optional.isEmpty())
-			return false;
-
-		return optional.get().isDeveloper();
+		return isDeveloper(usuario);
 	}
 
 	/**
@@ -714,10 +609,65 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si está autorizado, false en caso contrario
 	 */
 	private boolean autorizarModificarDeuda(UsuarioBBDD usuario) {
+		return isDeveloper(usuario);
+	}
+
+	// -------------------- METODOS PRIVADOS --------------------
+
+	/**
+	 * Verifica si el usuario que desea realizar la acción es el mismo al que afecta
+	 * dicha acción
+	 * 
+	 * @param usuario    usuario que desea realizar la acción
+	 * @param idAfectado oid del usuario afectado por la acción a realizar
+	 * @return true si es el mismo, false en caso contrario
+	 */
+	private boolean esElMismo(UsuarioBBDD usuario, long idAfectado) {
+		long id = usuario.getId();
+
+		return id == idAfectado;
+	}
+
+	/**
+	 * Verfiica si el usuario existe
+	 * 
+	 * @param usuario usuario que desea realizar la acción
+	 * @return true si existe, false en caso contrario
+	 */
+	private boolean existe(UsuarioBBDD usuario) {
+		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
+		return !optional.isEmpty();
+	}
+
+	/**
+	 * Verifica si el usuario que desea realizar la acción es un administrador
+	 * 
+	 * @param usuario usuario que desea realizar la acción
+	 * @return true si es un admin, false en caso contrario o que el usuario no
+	 *         exista
+	 */
+	private boolean isAdmin(UsuarioBBDD usuario) {
 		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
 		if (optional.isEmpty())
 			return false;
 
-		return optional.get().isDeveloper();
+		UsuarioBBDD usuarioBBDD = optional.get();
+		return usuarioBBDD.isAdmin();
+	}
+
+	/**
+	 * Verifica si el usuario que desea realizar la acción es un developer
+	 * 
+	 * @param usuario usuario que desea realizar la acción
+	 * @return true si es un developer, false en caso contrario o que el usuario no
+	 *         exista
+	 */
+	private boolean isDeveloper(UsuarioBBDD usuario) {
+		Optional<UsuarioBBDD> optional = repo.findById(usuario.getId());
+		if (optional.isEmpty())
+			return false;
+
+		UsuarioBBDD usuarioBBDD = optional.get();
+		return usuarioBBDD.isDeveloper();
 	}
 }
