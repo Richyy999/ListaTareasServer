@@ -68,6 +68,12 @@ public class ControladorDeveloper {
 	public ResponseEntity<DeudaConfig> getDeudaConfig(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
 		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_VER_DEUDA_CONFIG))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
@@ -91,6 +97,12 @@ public class ControladorDeveloper {
 	public ResponseEntity<DeudaConfig> crearDeudaConfig(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody DeudaConfig deudaConfig) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
 		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_CREAR_DEUDA_CONFIG))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
@@ -115,6 +127,12 @@ public class ControladorDeveloper {
 	public ResponseEntity<DeudaConfig> modificarDeudaConfig(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody DeudaConfig deudaConfig) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
 		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_MODIFICAR_DEUDA_CONFIG))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
@@ -142,6 +160,12 @@ public class ControladorDeveloper {
 			@RequestParam(name = "usuario") Long idAfectado, @RequestHeader(name = CABECERA_TOKEN) String token,
 			@RequestBody Deuda deuda) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
 		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_MODIFICAR_DEUDA, idAfectado))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
@@ -165,6 +189,12 @@ public class ControladorDeveloper {
 	public ResponseEntity<List<Codigo>> crearCodigo(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody Codigo codigo) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
 		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_CREAR_CODIGOS))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
@@ -186,7 +216,13 @@ public class ControladorDeveloper {
 	public ResponseEntity<List<Codigo>> modificarCodigo(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody Codigo codigo) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
-		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_MODIFICAR_CODIGOS, idUsuario))
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_MODIFICAR_CODIGOS))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
 		if (servicioCodigo.modificarCodigo(codigo))
@@ -207,7 +243,13 @@ public class ControladorDeveloper {
 	public ResponseEntity<List<Codigo>> eliminarCodigo(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody Codigo codigo) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
-		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_ELIMINAR_CODIGOS, idUsuario))
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_ELIMINAR_CODIGOS))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
 		if (servicioCodigo.eliminarCodigo(codigo))
@@ -229,6 +271,12 @@ public class ControladorDeveloper {
 	public ResponseEntity<List<Usuario>> getUsuarios(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
 		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_VER_USUARIOS))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
@@ -251,6 +299,12 @@ public class ControladorDeveloper {
 	public ResponseEntity<List<Usuario>> cambiarContrasena(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody UsuarioBBDD usuarioAfectado) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
 		if (!servicioUsuario.estaAutorizado(usuarioBBDD, Acciones.ACCION_CAMBAR_PWD, usuarioAfectado.getId()))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
@@ -277,6 +331,12 @@ public class ControladorDeveloper {
 	public ResponseEntity<List<Usuario>> modificarUsuario(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody Usuario usuario) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
 		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_MODIFICAR_USUARIOS))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 

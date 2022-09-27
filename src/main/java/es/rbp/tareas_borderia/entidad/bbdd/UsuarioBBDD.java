@@ -31,11 +31,14 @@ public class UsuarioBBDD {
 	@Column(name = "habilitado", nullable = false)
 	private boolean habilitado;
 
+	@Column(name = "bonificacion", nullable = false)
+	private double bonificacion;
+
 	@Column(name = "token", unique = true)
 	private String token;
 	@Column(name = "nombre", nullable = false, unique = true)
 	private String nombre;
-	@Column(name = "paswwd", nullable = false)
+	@Column(name = "passwd", nullable = false)
 	private String contrasena;
 
 	@CreationTimestamp
@@ -43,7 +46,7 @@ public class UsuarioBBDD {
 	private LocalDateTime fechaCreacion;
 	@UpdateTimestamp
 	@Column(name = "ultima_peticion", nullable = false)
-	private LocalDateTime ultimoLogin;
+	private LocalDateTime ultimaAccion;
 
 	public long getId() {
 		return id;
@@ -93,6 +96,14 @@ public class UsuarioBBDD {
 		this.habilitado = habilitado;
 	}
 
+	public double getBonificacion() {
+		return bonificacion;
+	}
+
+	public void setBonificacion(double bonificacion) {
+		this.bonificacion = bonificacion;
+	}
+
 	public String getToken() {
 		return token;
 	}
@@ -125,11 +136,11 @@ public class UsuarioBBDD {
 		this.fechaCreacion = fechaCreacion;
 	}
 
-	public LocalDateTime getUltimoLogin() {
-		return ultimoLogin;
+	public LocalDateTime getUltimaAccion() {
+		return ultimaAccion;
 	}
 
-	public void setUltimoLogin(LocalDateTime ultimoLogin) {
-		this.ultimoLogin = ultimoLogin;
+	public void setUltimaAccion(LocalDateTime ultimaAccion) {
+		this.ultimaAccion = ultimaAccion;
 	}
 }

@@ -16,6 +16,8 @@ public class Usuario implements Serializable {
 	private boolean terminosAceptados;
 	private boolean habilitado;
 
+	private double bonificacion;
+
 	private String token;
 	private String nombre;
 
@@ -81,6 +83,14 @@ public class Usuario implements Serializable {
 
 	public void setHabilitado(boolean habilitado) {
 		this.habilitado = habilitado;
+	}
+
+	public double getBonificacion() {
+		return bonificacion;
+	}
+
+	public void setBonificacion(double bonificacion) {
+		this.bonificacion = bonificacion;
 	}
 
 	public String getToken() {

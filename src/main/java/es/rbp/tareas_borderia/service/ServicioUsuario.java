@@ -31,6 +31,14 @@ public interface ServicioUsuario {
 	boolean estaAutorizado(UsuarioBBDD usuario, int accion);
 
 	/**
+	 * Verifica si la sesión del usuario sigue en vigor y, en ese caso, la actualiza
+	 * 
+	 * @param usuario usuario que desea realizar alguna acción
+	 * @return true si tiene una sesión activa, false en caso contrario
+	 */
+	boolean tieneSesionActiva(UsuarioBBDD usuario);
+
+	/**
 	 * Cambia la contraseña de un usuario y actualiza el campo cambiarPasswd en
 	 * función de quien cambie la contraseña.
 	 * 

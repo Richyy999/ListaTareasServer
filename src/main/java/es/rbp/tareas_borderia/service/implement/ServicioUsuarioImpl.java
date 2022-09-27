@@ -1,5 +1,7 @@
 package es.rbp.tareas_borderia.service.implement;
 
+import org.joda.time.DurationFieldType;
+import org.joda.time.Interval;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +14,9 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -132,6 +137,28 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	}
 
 	@Override
+	public boolean tieneSesionActiva(UsuarioBBDD usuario) {
+		LocalDateTime localUltimaAccion = usuario.getUltimaAccion();
+		LocalDateTime localAhora = LocalDateTime.now(ZoneId.systemDefault());
+
+		Date ultimaPeticion = Date.from(localUltimaAccion.atZone(ZoneId.systemDefault()).toInstant());
+		Date ahora = Date.from(localAhora.atZone(ZoneId.systemDefault()).toInstant());
+
+		long ultimaPeticionMili = ultimaPeticion.getTime();
+		long ahoraMili = ahora.getTime();
+
+		Interval interval = new Interval(ultimaPeticionMili, ahoraMili);
+		int diferencia = interval.toPeriod().get(DurationFieldType.minutes());
+
+		if (diferencia >= 5)
+			return false;
+
+		usuario.setUltimaAccion(localAhora);
+		repo.save(usuario);
+		return true;
+	}
+
+	@Override
 	public UsuarioBBDD cambiarContrasena(UsuarioBBDD usuario, long idAfectado, String contrasena) {
 		Optional<UsuarioBBDD> optional = repo.findById(idAfectado);
 		if (optional.isEmpty() || contrasena == null)
@@ -158,6 +185,8 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 		usuario.setDeveloper(usuarios.size() == 0);
 		usuario.setCambiarPasswd(false);
 		usuario.setHabilitado(true);
+
+		usuario.setBonificacion(0d);
 
 		String token = generarToken();
 		usuario.setToken(token);

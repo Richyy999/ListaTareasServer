@@ -99,6 +99,12 @@ public class ControladorTareas {
 	public ResponseEntity<List<Mes>> getMeses(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
 		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_OBTENER_MESES))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
@@ -121,6 +127,12 @@ public class ControladorTareas {
 			@RequestParam(name = "habitacion") Long idHabitacion, @RequestHeader(name = CABECERA_TOKEN) String token,
 			@RequestBody(required = true) Habitacion habitacionAnadir) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
 		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_ANADIR_TAREA))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
@@ -130,6 +142,14 @@ public class ControladorTareas {
 				mesActual.getId());
 		if (habitacionBBDD == null)
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+		for (Tarea tarea : habitacionAnadir.getTareas()) {
+			double tantoPorUno = usuarioBBDD.getBonificacion() / 100.0;
+			double bonificacion = tarea.getPrecioSinPagar() * tantoPorUno;
+			bonificacion = Math.round(bonificacion * 100.0) / 100.0;
+
+			tarea.setPrecioSinPagar(tarea.getPrecioSinPagar() + bonificacion);
+		}
 
 		servicioDeuda.reducirDeuda(idUsuario, habitacionAnadir);
 
@@ -148,6 +168,12 @@ public class ControladorTareas {
 	public ResponseEntity<List<Mes>> anadirTareaEspecial(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody TareaEspecial tareaEspecial) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
 		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_ANADIR_TAREA))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
@@ -186,6 +212,12 @@ public class ControladorTareas {
 	public ResponseEntity<List<Mes>> eliminarHabitacion(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestParam(name = "habitacion") Long idHabitacion, @RequestHeader(name = CABECERA_TOKEN) String token) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
 		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_ELIMINAR_HABITACION))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
@@ -208,6 +240,12 @@ public class ControladorTareas {
 	public ResponseEntity<List<Habitacion>> getHabitacionesMuestra(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
 		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_VER_HABITACIONES))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
@@ -251,6 +289,12 @@ public class ControladorTareas {
 			@RequestParam(name = "idHabitacion", required = false) Long idHabitacion,
 			@RequestHeader(name = CABECERA_TOKEN) String token) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
 		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_VER_HISTORIAL))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
@@ -275,6 +319,12 @@ public class ControladorTareas {
 	public ResponseEntity<List<Mes>> cobrar(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody IDWrapper ids) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
 		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_COBRAR))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
@@ -302,6 +352,12 @@ public class ControladorTareas {
 	public ResponseEntity<List<Mes>> cobrarCantidad(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestParam(name = "cantidad") Double cantidad, @RequestHeader(name = CABECERA_TOKEN) String token) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
 		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_COBRAR))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
@@ -325,6 +381,12 @@ public class ControladorTareas {
 	public ResponseEntity<Deuda> getDeuda(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestParam(name = "usuario") Long idAfectado, @RequestHeader(name = CABECERA_TOKEN) String token) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
 		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_VER_DEUDA, idAfectado))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
@@ -346,6 +408,12 @@ public class ControladorTareas {
 	public ResponseEntity<List<Mes>> anadirDeuda(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody Deuda deuda) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
 		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_AUMENTAR_DEUDA))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 

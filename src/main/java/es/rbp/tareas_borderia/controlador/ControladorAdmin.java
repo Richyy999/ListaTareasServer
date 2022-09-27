@@ -66,7 +66,7 @@ public class ControladorAdmin {
 	private ServicioCodigo servicioCodigo;
 
 	// -------------------- TAREAS CONFIG --------------------
-	
+
 	/**
 	 * Obtiene todas las tareas de configuración
 	 * 
@@ -78,7 +78,13 @@ public class ControladorAdmin {
 	public ResponseEntity<List<TareaConfig>> getTareasConfig(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
-		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_VER_TAREAS_CONFIG, idUsuario))
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_VER_TAREAS_CONFIG))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
 		List<TareaConfig> tareasConfig = getTareasConfig();
@@ -97,7 +103,13 @@ public class ControladorAdmin {
 	public ResponseEntity<List<TareaConfig>> anadirTarea(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody TareaConfig tareaConfig) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
-		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_CREAR_TAREA_CONFIG, idUsuario))
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_CREAR_TAREA_CONFIG))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
 		if (servicioTareaConfig.crearTareaConfig(tareaConfig, usuarioBBDD))
@@ -119,7 +131,13 @@ public class ControladorAdmin {
 	public ResponseEntity<List<TareaConfig>> modificarTareas(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody TareaConfig tareaConfig) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
-		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_MODIFICAR_TAREA_CONFIG, idUsuario))
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_MODIFICAR_TAREA_CONFIG))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
 		if (servicioTareaConfig.modificarTareaLimpiezaConfig(tareaConfig, usuarioBBDD))
@@ -140,7 +158,13 @@ public class ControladorAdmin {
 	public ResponseEntity<List<TareaConfig>> eliminarTareaConfig(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody IDWrapper ids) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
-		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_ELIMINAR_TAREA_CONFIG, idUsuario))
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_ELIMINAR_TAREA_CONFIG))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
 		for (long id : ids.getIds()) {
@@ -164,7 +188,13 @@ public class ControladorAdmin {
 	public ResponseEntity<List<HabitacionConfig>> getHabitacionesConfig(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
-		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_VER_HABITACIONES_CONFIG, idUsuario))
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_VER_HABITACIONES_CONFIG))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
 		List<HabitacionConfig> habitacionesConfig = getHabitacionesConfig();
@@ -184,7 +214,13 @@ public class ControladorAdmin {
 	public ResponseEntity<List<HabitacionConfig>> anadirHabitacion(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody HabitacionConfig habitacionConfig) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
-		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_CREAR_HABITACION_CONFIG, idUsuario))
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_CREAR_HABITACION_CONFIG))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
 		HabitacionConfigBBDD habitacionConfigBBDD = servicioHabitacionConfig
@@ -219,7 +255,13 @@ public class ControladorAdmin {
 			@RequestParam(name = ID_USUARIO) Long idUsuario, @RequestHeader(name = CABECERA_TOKEN) String token,
 			@RequestBody HabitacionConfig habitacionConfig) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
-		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_MODIFICAR_HABITACION_CONFIG, idUsuario))
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_MODIFICAR_HABITACION_CONFIG))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
 		if (!servicioHabitacionConfig.modificarHabitacion(habitacionConfig, usuarioBBDD))
@@ -248,7 +290,13 @@ public class ControladorAdmin {
 			@RequestParam(name = ID_USUARIO) Long idUsuario, @RequestHeader(name = CABECERA_TOKEN) String token,
 			@RequestBody IDWrapper ids) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
-		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_ELIMINAR_HABITACION_CONFIG, idUsuario))
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_ELIMINAR_HABITACION_CONFIG))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
 		for (long id : ids.getIds()) {
@@ -283,7 +331,13 @@ public class ControladorAdmin {
 	public ResponseEntity<List<Historial>> anadirHistorial(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody HistorialBBDD historialBBDD) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
-		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_CREAR_HISTORIAL, idUsuario))
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_CREAR_HISTORIAL))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
 		if (servicioHistorial.crearHistorial(historialBBDD.getIdHabitacionConfig(), historialBBDD.getNombreHabitacion(),
@@ -305,7 +359,13 @@ public class ControladorAdmin {
 	public ResponseEntity<List<Historial>> modificarHistorial(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody Historial historial) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
-		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_MODIFICAR_HISTORIAL, idUsuario))
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_MODIFICAR_HISTORIAL))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
 		if (servicioHistorial.modificarHistorial(historial.getId(), historial.getNombreHabitacion()))
@@ -326,7 +386,13 @@ public class ControladorAdmin {
 	public ResponseEntity<List<Historial>> eliminarHistoriales(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody IDWrapper ids) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
-		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_ELIMINAR_HISTORIAL, idUsuario))
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_ELIMINAR_HISTORIAL))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
 		for (long id : ids.getIds()) {
@@ -349,12 +415,18 @@ public class ControladorAdmin {
 	public ResponseEntity<List<Codigo>> getCodigos(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
-		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_VER_CODIGOS, idUsuario))
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_VER_CODIGOS))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
 		return new ResponseEntity<List<Codigo>>(servicioCodigo.findAll(), HttpStatus.OK);
 	}
-	
+
 	// -------------------- METODOS PRIVADOS --------------------
 
 	/**

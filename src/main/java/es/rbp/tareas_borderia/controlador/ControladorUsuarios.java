@@ -51,8 +51,8 @@ public class ControladorUsuarios {
 	 * Crea un usuario nuevo a partir de su nombre y contraseña
 	 * 
 	 * @param usuarioBBDD usuario nuevo
-	 * @return usuario creado, {@link HttpStatus#UNAUTHORIZED} si el nombre del
-	 *         usuario ya existe
+	 * @return usuario creado, {@link HttpStatus#CONFLICT} si el nombre del usuario
+	 *         ya existe
 	 */
 	@PostMapping(path = "/registro", produces = PRODUCES_JSON)
 	public ResponseEntity<Usuario> registro(@RequestBody UsuarioBBDD usuarioBBDD) {
@@ -98,6 +98,12 @@ public class ControladorUsuarios {
 	public ResponseEntity<Usuario> aceptarTerminos(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody Usuario usuario) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
 		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_ACEPTAR_TERMINOS, usuario.getId()))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 

@@ -22,7 +22,7 @@ public class ServicioHabitacionImpl implements ServicioHabitacion {
 
 	@Autowired
 	private RepositorioTarea repoTarea;
-	
+
 	@Autowired
 	private RepositorioMes repoMes;
 
@@ -62,7 +62,7 @@ public class ServicioHabitacionImpl implements ServicioHabitacion {
 
 		HabitacionBBDD habitacion = optional.get();
 		repoHabitacion.delete(habitacion);
-		
+
 		Optional<MesBBDD> optionalMes = repoMes.findById(habitacion.getIdMes());
 		if (!optional.isEmpty()) {
 			MesBBDD mes = optionalMes.get();

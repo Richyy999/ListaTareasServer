@@ -1,6 +1,7 @@
 package es.rbp.tareas_borderia.entidad;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,10 +12,12 @@ import es.rbp.tareas_borderia.entidad.config.TareaConfig;
 public class Habitacion implements Serializable {
 
 	private static final long serialVersionUID = 4L;
-	
+
 	private long id;
 
 	private String nombre;
+
+	private LocalDateTime fechaLimpieza;
 
 	private List<Tarea> tareas;
 
@@ -24,6 +27,7 @@ public class Habitacion implements Serializable {
 	public Habitacion(HabitacionBBDD habitacionBBDD, List<Tarea> tareas) {
 		this.id = habitacionBBDD.getId();
 		this.nombre = habitacionBBDD.getNombre();
+		this.fechaLimpieza = habitacionBBDD.getFechaLimpieza();
 
 		this.tareas = tareas;
 	}
@@ -52,6 +56,14 @@ public class Habitacion implements Serializable {
 
 	public void setNombre(String nombre) {
 		this.nombre = nombre;
+	}
+
+	public LocalDateTime getFechaLimpieza() {
+		return fechaLimpieza;
+	}
+
+	public void setFechaLimpieza(LocalDateTime fechaLimpieza) {
+		this.fechaLimpieza = fechaLimpieza;
 	}
 
 	public List<Tarea> getTareas() {
