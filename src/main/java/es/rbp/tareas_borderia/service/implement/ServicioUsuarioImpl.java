@@ -272,6 +272,9 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 		if (usuario.isHabilitado() != usuarioBBDD.isHabilitado())
 			usuarioBBDD.setHabilitado(usuario.isHabilitado());
 
+		if (usuario.getBonificacion() != usuarioBBDD.getBonificacion())
+			usuarioBBDD.setBonificacion(usuario.getBonificacion());
+
 		return repo.save(usuarioBBDD) != null;
 	}
 
