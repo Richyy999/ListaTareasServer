@@ -17,12 +17,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import es.rbp.tareas_borderia.entidad.Historial;
-import es.rbp.tareas_borderia.entidad.IDWrapper;
+import es.rbp.tareas_borderia.entidad.Termino;
 import es.rbp.tareas_borderia.entidad.Usuario;
 import es.rbp.tareas_borderia.entidad.bbdd.Codigo;
 import es.rbp.tareas_borderia.entidad.bbdd.HabitacionConfigBBDD;
 import es.rbp.tareas_borderia.entidad.bbdd.HistorialBBDD;
 import es.rbp.tareas_borderia.entidad.bbdd.TareaConfigBBDD;
+import es.rbp.tareas_borderia.entidad.bbdd.TerminoBBDD;
 import es.rbp.tareas_borderia.entidad.bbdd.UsuarioBBDD;
 import es.rbp.tareas_borderia.entidad.config.HabitacionConfig;
 import es.rbp.tareas_borderia.entidad.config.TareaConfig;
@@ -30,21 +31,11 @@ import es.rbp.tareas_borderia.service.ServicioCodigo;
 import es.rbp.tareas_borderia.service.ServicioHabitacionConfig;
 import es.rbp.tareas_borderia.service.ServicioHistorial;
 import es.rbp.tareas_borderia.service.ServicioTareaConfig;
+import es.rbp.tareas_borderia.service.ServicioTermino;
 import es.rbp.tareas_borderia.service.ServicioUsuario;
 
 import static es.rbp.tareas_borderia.controlador.ConstantesControlador.*;
-import static es.rbp.tareas_borderia.service.Acciones.ACCION_VER_TAREAS_CONFIG;
-import static es.rbp.tareas_borderia.service.Acciones.ACCION_CREAR_TAREA_CONFIG;
-import static es.rbp.tareas_borderia.service.Acciones.ACCION_MODIFICAR_TAREA_CONFIG;
-import static es.rbp.tareas_borderia.service.Acciones.ACCION_ELIMINAR_TAREA_CONFIG;
-import static es.rbp.tareas_borderia.service.Acciones.ACCION_VER_HABITACIONES_CONFIG;
-import static es.rbp.tareas_borderia.service.Acciones.ACCION_CREAR_HABITACION_CONFIG;
-import static es.rbp.tareas_borderia.service.Acciones.ACCION_MODIFICAR_HABITACION_CONFIG;
-import static es.rbp.tareas_borderia.service.Acciones.ACCION_ELIMINAR_HABITACION_CONFIG;
-import static es.rbp.tareas_borderia.service.Acciones.ACCION_CREAR_HISTORIAL;
-import static es.rbp.tareas_borderia.service.Acciones.ACCION_MODIFICAR_HISTORIAL;
-import static es.rbp.tareas_borderia.service.Acciones.ACCION_ELIMINAR_HISTORIAL;
-import static es.rbp.tareas_borderia.service.Acciones.ACCION_VER_CODIGOS;
+import static es.rbp.tareas_borderia.service.Acciones.Admin.*;
 
 @RestController
 @RequestMapping("/admin")
@@ -64,6 +55,9 @@ public class ControladorAdmin {
 
 	@Autowired
 	private ServicioCodigo servicioCodigo;
+
+	@Autowired
+	private ServicioTermino servicioTermino;
 
 	// -------------------- TAREAS CONFIG --------------------
 
@@ -156,7 +150,7 @@ public class ControladorAdmin {
 	 */
 	@DeleteMapping(path = "/tarea/eliminar", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
 	public ResponseEntity<List<TareaConfig>> eliminarTareaConfig(@RequestParam(name = ID_USUARIO) Long idUsuario,
-			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody IDWrapper ids) {
+			@RequestParam(name = "tarea") Long idTarea, @RequestHeader(name = CABECERA_TOKEN) String token) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
 		if (usuarioBBDD == null)
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
@@ -167,9 +161,7 @@ public class ControladorAdmin {
 		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_ELIMINAR_TAREA_CONFIG))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
-		for (long id : ids.getIds()) {
-			servicioTareaConfig.eliminarTareaConfig(id);
-		}
+		servicioTareaConfig.eliminarTareaConfig(idTarea);
 
 		return new ResponseEntity<List<TareaConfig>>(getTareasConfig(), HttpStatus.OK);
 	}
@@ -287,8 +279,8 @@ public class ControladorAdmin {
 	 */
 	@DeleteMapping(path = "/habitacion/eliminar", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
 	public ResponseEntity<List<HabitacionConfig>> eliminarHabitacionConfig(
-			@RequestParam(name = ID_USUARIO) Long idUsuario, @RequestHeader(name = CABECERA_TOKEN) String token,
-			@RequestBody IDWrapper ids) {
+			@RequestParam(name = ID_USUARIO) Long idUsuario, @RequestParam(name = "habitacion") Long idHabitacion,
+			@RequestHeader(name = CABECERA_TOKEN) String token) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
 		if (usuarioBBDD == null)
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
@@ -299,19 +291,17 @@ public class ControladorAdmin {
 		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_ELIMINAR_HABITACION_CONFIG))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
-		for (long id : ids.getIds()) {
-			List<TareaConfigBBDD> tareasConfig = servicioTareaConfig.findByIdHabitacionConfig(id);
-			for (TareaConfigBBDD tareaConfig : tareasConfig) {
-				servicioTareaConfig.eliminarTareaConfig(tareaConfig.getId());
-			}
-
-			List<HistorialBBDD> historiales = servicioHistorial.findByIdHabitacionConfig(id);
-			for (HistorialBBDD historialBBDD : historiales) {
-				servicioHistorial.eliminarHistorial(historialBBDD.getId());
-			}
-
-			servicioHabitacionConfig.eliminarHabitacion(id);
+		List<TareaConfigBBDD> tareasConfig = servicioTareaConfig.findByIdHabitacionConfig(idHabitacion);
+		for (TareaConfigBBDD tareaConfig : tareasConfig) {
+			servicioTareaConfig.eliminarTareaConfig(tareaConfig.getId());
 		}
+
+		List<HistorialBBDD> historiales = servicioHistorial.findByIdHabitacionConfig(idHabitacion);
+		for (HistorialBBDD historialBBDD : historiales) {
+			servicioHistorial.eliminarHistorial(historialBBDD.getId());
+		}
+
+		servicioHabitacionConfig.eliminarHabitacion(idHabitacion);
 
 		List<HabitacionConfig> habitacionesConfig = getHabitacionesConfig();
 		return new ResponseEntity<List<HabitacionConfig>>(habitacionesConfig, HttpStatus.OK);
@@ -327,7 +317,7 @@ public class ControladorAdmin {
 	 * @param historialBBDD historial con los datos necesarios para crearlo
 	 * @return lista de todos los historiales
 	 */
-	@PostMapping(path = "/historial/crear", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
+	@PostMapping(path = "/historial/anadir", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
 	public ResponseEntity<List<Historial>> anadirHistorial(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody HistorialBBDD historialBBDD) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
@@ -384,7 +374,7 @@ public class ControladorAdmin {
 	 */
 	@DeleteMapping(path = "/historial/eliminar", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
 	public ResponseEntity<List<Historial>> eliminarHistoriales(@RequestParam(name = ID_USUARIO) Long idUsuario,
-			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody IDWrapper ids) {
+			@RequestParam(name = "historial") Long idHistorial, @RequestHeader(name = CABECERA_TOKEN) String token) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
 		if (usuarioBBDD == null)
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
@@ -395,11 +385,92 @@ public class ControladorAdmin {
 		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_ELIMINAR_HISTORIAL))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
-		for (long id : ids.getIds()) {
-			servicioHistorial.eliminarHistorial(id);
-		}
+		servicioHistorial.eliminarHistorial(idHistorial);
 
 		return new ResponseEntity<>(getHistorial(), HttpStatus.OK);
+	}
+
+	// -------------------- TERMINOS --------------------
+
+	/**
+	 * Crea un término nuevo
+	 * 
+	 * @param idUsuario id del usuario que desea crear el término
+	 * @param token     token único del usuario para identificarlo
+	 * @param termino   término a crear
+	 * @return lista con todos los términos
+	 */
+	@PostMapping(path = "/termino/anadir", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
+	public ResponseEntity<List<Termino>> anadirTermino(@RequestParam(name = ID_USUARIO) Long idUsuario,
+			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody Termino termino) {
+		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_ANADIR_TERMINOS))
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (servicioTermino.anadirTermino(termino))
+			return new ResponseEntity<List<Termino>>(getTerminos(servicioTermino.findAlll()), HttpStatus.OK);
+
+		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+	}
+
+	/**
+	 * Modifica un término
+	 * 
+	 * @param idUsuario id del usuario que desea modificar un término
+	 * @param token     token único del usuario para identificarlo
+	 * @param termino   término con los datos nuevos
+	 * @return lista con todos los términos
+	 */
+	@PutMapping(path = "/termino/modificar", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
+	public ResponseEntity<List<Termino>> modificarTermino(@RequestParam(name = ID_USUARIO) Long idUsuario,
+			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody Termino termino) {
+		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_MODIFICAR_TERMINOS))
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (servicioTermino.modificarTermino(termino.getTitulo(), termino))
+			return new ResponseEntity<List<Termino>>(getTerminos(servicioTermino.findAlll()), HttpStatus.OK);
+
+		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+	}
+
+	/**
+	 * Elimina un término
+	 * 
+	 * @param idUsuario id del usuario que desea eliminar un término
+	 * @param token     token único del usuario para identificarlo
+	 * @param termino   término con el título a eliminar
+	 * @return lista con todos los términos
+	 */
+	@DeleteMapping(path = "/termino/eliminar", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
+	public ResponseEntity<List<Termino>> eliminarTermino(@RequestParam(name = ID_USUARIO) Long idUsuario,
+			@RequestParam(name = "termino") String titulo, @RequestHeader(name = CABECERA_TOKEN) String token) {
+		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_ELIMINAR_TERMINOS))
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (servicioTermino.eliminarTermino(titulo))
+			return new ResponseEntity<List<Termino>>(getTerminos(servicioTermino.findAlll()), HttpStatus.OK);
+
+		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 	}
 
 	// -------------------- CODIGOS --------------------
@@ -499,5 +570,19 @@ public class ControladorAdmin {
 		}
 
 		return historiales;
+	}
+
+	/**
+	 * Convierte una lista de {@link TerminoBBDD} en una lista de {@link Termino}
+	 * 
+	 * @param terminosBBDD términos a convertir
+	 * @return lista de {@link Termino} creada a partir de los términos indicados
+	 */
+	private List<Termino> getTerminos(List<TerminoBBDD> terminosBBDD) {
+		List<Termino> terminos = new ArrayList<>();
+		for (TerminoBBDD terminoBBDD : terminosBBDD) {
+			terminos.add(new Termino(terminoBBDD));
+		}
+		return terminos;
 	}
 }

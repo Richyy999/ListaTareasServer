@@ -73,8 +73,7 @@ public class ServicioCodigoImpl implements ServicioCodigo {
 	}
 
 	@Override
-	public boolean eliminarCodigo(Codigo codigo) {
-		long id = codigo.getId();
+	public boolean eliminarCodigo(long id) {
 		Optional<Codigo> optional = repo.findById(id);
 		if (optional.isEmpty())
 			return false;

@@ -20,10 +20,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-import static es.rbp.tareas_borderia.service.Acciones.*;
+import static es.rbp.tareas_borderia.service.Acciones.Developer.*;
+import static es.rbp.tareas_borderia.service.Acciones.Admin.*;
+import static es.rbp.tareas_borderia.service.Acciones.Usuario.*;
 
 @Service
 public class ServicioUsuarioImpl implements ServicioUsuario {
+
+	private static final int DURACION_SESION = 5;
 
 	@Autowired
 	private RepositorioUsuario repo;
@@ -64,6 +68,9 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 		case ACCION_ELIMINAR_HABITACION:
 			return autorizarEliminarHabitacion(usuario);
 
+		case ACCION_VER_TERMINOS:
+			return autorizarVerTermino(usuario);
+
 		case ACCION_VER_TAREAS_CONFIG:
 			return autorizarVerTareaConfig(usuario);
 
@@ -99,6 +106,15 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 
 		case ACCION_VER_CODIGOS:
 			return autorizarVerCodigos(usuario);
+
+		case ACCION_ANADIR_TERMINOS:
+			return autorizarAnadirTermino(usuario);
+
+		case ACCION_MODIFICAR_TERMINOS:
+			return autorizarModificarTermino(usuario);
+
+		case ACCION_ELIMINAR_TERMINOS:
+			return autorizarEliminarTermino(usuario);
 
 		case ACCION_VER_DEUDA_CONFIG:
 			return autorizarVerDeudaConfig(usuario);
@@ -150,7 +166,7 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 		Interval interval = new Interval(ultimaPeticionMili, ahoraMili);
 		int diferencia = interval.toPeriod().get(DurationFieldType.minutes());
 
-		if (diferencia >= 5)
+		if (diferencia >= DURACION_SESION)
 			return false;
 
 		usuario.setUltimaAccion(localAhora);
@@ -162,6 +178,9 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	public UsuarioBBDD cambiarContrasena(UsuarioBBDD usuario, long idAfectado, String contrasena) {
 		Optional<UsuarioBBDD> optional = repo.findById(idAfectado);
 		if (optional.isEmpty() || contrasena == null)
+			return null;
+
+		if (contrasena.length() < 4)
 			return null;
 
 		UsuarioBBDD user = optional.get();
@@ -192,6 +211,9 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 		usuario.setToken(token);
 
 		usuario.setNombre(nombre);
+
+		if (contrasena.length() < 4)
+			return null;
 
 		String hash = hashString(contrasena);
 		usuario.setContrasena(hash);
@@ -430,6 +452,16 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 		return existe(usuario);
 	}
 
+	/**
+	 * Verifica si un usuario puede ver los términos
+	 * 
+	 * @param usuario usuario que desea ver los términos
+	 * @return true si estáautorizado, false en caso contrario
+	 */
+	private boolean autorizarVerTermino(UsuarioBBDD usuario) {
+		return existe(usuario);
+	}
+
 	// -------------------- ADMIN --------------------
 
 	/**
@@ -549,6 +581,36 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si está autorizado, false en caso contrario
 	 */
 	private boolean autorizarVerCodigos(UsuarioBBDD usuario) {
+		return isAdmin(usuario);
+	}
+
+	/**
+	 * Verifica si un usuario puede crear un término
+	 * 
+	 * @param usuario usuario que desea crear un término
+	 * @return true si está autorizado, false en caso contrario
+	 */
+	private boolean autorizarAnadirTermino(UsuarioBBDD usuario) {
+		return isAdmin(usuario);
+	}
+
+	/**
+	 * Verifica si un usuario puede modificar los términos
+	 * 
+	 * @param usuario usuario que desea modificar los términos
+	 * @return true si está autorizado, false en caso contrario
+	 */
+	private boolean autorizarModificarTermino(UsuarioBBDD usuario) {
+		return isAdmin(usuario);
+	}
+
+	/**
+	 * Verifica si un usuario puede eliminar términos
+	 * 
+	 * @param usuario usuario que desea eliminar un término
+	 * @return true si está autorizado, false en caso contrario
+	 */
+	private boolean autorizarEliminarTermino(UsuarioBBDD usuario) {
 		return isAdmin(usuario);
 	}
 

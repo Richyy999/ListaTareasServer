@@ -22,6 +22,7 @@ import es.rbp.tareas_borderia.entidad.IDWrapper;
 import es.rbp.tareas_borderia.entidad.Mes;
 import es.rbp.tareas_borderia.entidad.Tarea;
 import es.rbp.tareas_borderia.entidad.TareaEspecial;
+import es.rbp.tareas_borderia.entidad.Termino;
 import es.rbp.tareas_borderia.entidad.Usuario;
 import es.rbp.tareas_borderia.entidad.bbdd.Codigo;
 import es.rbp.tareas_borderia.entidad.bbdd.DeudaBBDD;
@@ -31,6 +32,7 @@ import es.rbp.tareas_borderia.entidad.bbdd.HistorialBBDD;
 import es.rbp.tareas_borderia.entidad.bbdd.MesBBDD;
 import es.rbp.tareas_borderia.entidad.bbdd.TareaBBDD;
 import es.rbp.tareas_borderia.entidad.bbdd.TareaConfigBBDD;
+import es.rbp.tareas_borderia.entidad.bbdd.TerminoBBDD;
 import es.rbp.tareas_borderia.entidad.bbdd.UsuarioBBDD;
 import es.rbp.tareas_borderia.entidad.config.HabitacionConfig;
 import es.rbp.tareas_borderia.entidad.config.TareaConfig;
@@ -42,18 +44,12 @@ import es.rbp.tareas_borderia.service.ServicioHistorial;
 import es.rbp.tareas_borderia.service.ServicioMes;
 import es.rbp.tareas_borderia.service.ServicioTarea;
 import es.rbp.tareas_borderia.service.ServicioTareaConfig;
+import es.rbp.tareas_borderia.service.ServicioTermino;
 import es.rbp.tareas_borderia.service.ServicioUsuario;
 
 import static es.rbp.tareas_borderia.controlador.ConstantesControlador.*;
 
-import static es.rbp.tareas_borderia.service.Acciones.ACCION_OBTENER_MESES;
-import static es.rbp.tareas_borderia.service.Acciones.ACCION_ANADIR_TAREA;
-import static es.rbp.tareas_borderia.service.Acciones.ACCION_COBRAR;
-import static es.rbp.tareas_borderia.service.Acciones.ACCION_VER_HABITACIONES;
-import static es.rbp.tareas_borderia.service.Acciones.ACCION_ELIMINAR_HABITACION;
-import static es.rbp.tareas_borderia.service.Acciones.ACCION_VER_HISTORIAL;
-import static es.rbp.tareas_borderia.service.Acciones.ACCION_VER_DEUDA;
-import static es.rbp.tareas_borderia.service.Acciones.ACCION_AUMENTAR_DEUDA;
+import static es.rbp.tareas_borderia.service.Acciones.Usuario.*;
 
 @RestController
 @RequestMapping("/tareas")
@@ -85,6 +81,9 @@ public class ControladorTareas {
 
 	@Autowired
 	private ServicioCodigo servicioCodigo;
+
+	@Autowired
+	private ServicioTermino servicioTermino;
 
 	// -------------------- TAREAS --------------------
 
@@ -435,6 +434,38 @@ public class ControladorTareas {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
 		return new ResponseEntity<List<Mes>>(getMeses(usuarioBBDD.getId()), HttpStatus.OK);
+	}
+
+	// -------------------- TERMINOS --------------------
+
+	/**
+	 * Devuelve la lista con todos los términos
+	 * 
+	 * @param idUsuario id del usuario que desea ver los términos
+	 * @param token     token único del usuario para identificarlo
+	 * @return lista con todos los términos
+	 */
+	@GetMapping(path = "/terminos", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
+	public ResponseEntity<List<Termino>> getTerminos(@RequestParam(name = ID_USUARIO) Long idUsuario,
+			@RequestHeader(name = CABECERA_TOKEN) String token) {
+		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_VER_TERMINOS))
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		List<TerminoBBDD> terminosBBDD = servicioTermino.findAlll();
+		List<Termino> terminos = new ArrayList<>();
+
+		for (TerminoBBDD terminoBBDD : terminosBBDD) {
+			terminos.add(new Termino(terminoBBDD));
+		}
+
+		return new ResponseEntity<List<Termino>>(terminos, HttpStatus.OK);
 	}
 
 	// -------------------- METODOS PRIVADOS --------------------

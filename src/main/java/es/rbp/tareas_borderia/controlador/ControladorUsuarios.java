@@ -17,7 +17,7 @@ import es.rbp.tareas_borderia.service.ServicioUsuario;
 
 import static es.rbp.tareas_borderia.controlador.ConstantesControlador.*;
 
-import static es.rbp.tareas_borderia.service.Acciones.ACCION_ACEPTAR_TERMINOS;
+import static es.rbp.tareas_borderia.service.Acciones.Usuario.ACCION_ACEPTAR_TERMINOS;
 
 @RestController
 @RequestMapping("/usuario")
@@ -104,7 +104,7 @@ public class ControladorUsuarios {
 		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
 			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 
-		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_ACEPTAR_TERMINOS, usuario.getId()))
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_ACEPTAR_TERMINOS))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
 		UsuarioBBDD usuarioActualizado = servicioUsuario.aceptarTerminos(usuarioBBDD);

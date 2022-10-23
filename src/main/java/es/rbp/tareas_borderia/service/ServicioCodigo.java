@@ -45,5 +45,5 @@ public interface ServicioCodigo {
 	 * @param codigo código a eliminar
 	 * @return true si se ha eliminado, false en caso contrario
 	 */
-	boolean eliminarCodigo(Codigo codigo);
+	boolean eliminarCodigo(long id);
 }

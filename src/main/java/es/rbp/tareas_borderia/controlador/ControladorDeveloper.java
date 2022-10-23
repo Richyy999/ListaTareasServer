@@ -19,22 +19,13 @@ import es.rbp.tareas_borderia.entidad.bbdd.Codigo;
 import es.rbp.tareas_borderia.entidad.bbdd.DeudaConfigBBDD;
 import es.rbp.tareas_borderia.entidad.bbdd.UsuarioBBDD;
 import es.rbp.tareas_borderia.entidad.config.DeudaConfig;
-import es.rbp.tareas_borderia.service.Acciones;
 import es.rbp.tareas_borderia.service.ServicioCodigo;
 import es.rbp.tareas_borderia.service.ServicioDeuda;
 import es.rbp.tareas_borderia.service.ServicioDeudaConfig;
 import es.rbp.tareas_borderia.service.ServicioUsuario;
 
 import static es.rbp.tareas_borderia.controlador.ConstantesControlador.*;
-import static es.rbp.tareas_borderia.service.Acciones.ACCION_CREAR_DEUDA_CONFIG;
-import static es.rbp.tareas_borderia.service.Acciones.ACCION_MODIFICAR_DEUDA_CONFIG;
-import static es.rbp.tareas_borderia.service.Acciones.ACCION_VER_DEUDA_CONFIG;
-import static es.rbp.tareas_borderia.service.Acciones.ACCION_CREAR_CODIGOS;
-import static es.rbp.tareas_borderia.service.Acciones.ACCION_MODIFICAR_CODIGOS;
-import static es.rbp.tareas_borderia.service.Acciones.ACCION_ELIMINAR_CODIGOS;
-import static es.rbp.tareas_borderia.service.Acciones.ACCION_VER_USUARIOS;
-import static es.rbp.tareas_borderia.service.Acciones.ACCION_MODIFICAR_USUARIOS;
-import static es.rbp.tareas_borderia.service.Acciones.ACCION_MODIFICAR_DEUDA;
+import static es.rbp.tareas_borderia.service.Acciones.Developer.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -241,7 +232,7 @@ public class ControladorDeveloper {
 	 */
 	@DeleteMapping(path = "/codigo/eliminar", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
 	public ResponseEntity<List<Codigo>> eliminarCodigo(@RequestParam(name = ID_USUARIO) Long idUsuario,
-			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody Codigo codigo) {
+			@RequestParam(name = "codigo") Long idCodigo, @RequestHeader(name = CABECERA_TOKEN) String token) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
 		if (usuarioBBDD == null)
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
@@ -252,7 +243,7 @@ public class ControladorDeveloper {
 		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_ELIMINAR_CODIGOS))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
-		if (servicioCodigo.eliminarCodigo(codigo))
+		if (servicioCodigo.eliminarCodigo(idCodigo))
 			return new ResponseEntity<List<Codigo>>(servicioCodigo.findAll(), HttpStatus.OK);
 
 		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -305,7 +296,7 @@ public class ControladorDeveloper {
 		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
 			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 
-		if (!servicioUsuario.estaAutorizado(usuarioBBDD, Acciones.ACCION_CAMBAR_PWD, usuarioAfectado.getId()))
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_CAMBAR_PWD, usuarioAfectado.getId()))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
 		String contrasena = usuarioAfectado.getContrasena();
