@@ -512,7 +512,9 @@ public class ControladorTareas {
 		List<Historial> historiales = new ArrayList<>();
 		for (HistorialBBDD historialBBDD : historialesBBDD) {
 			UsuarioBBDD usuarioBBDDHistorial = servicioUsuario.findById(historialBBDD.getIdUsuario());
-			Usuario usuarioHistorial = new Usuario(usuarioBBDDHistorial);
+			Usuario usuarioHistorial = null;
+			if (usuarioBBDDHistorial != null)
+				usuarioHistorial = new Usuario(usuarioBBDDHistorial);
 
 			HabitacionConfigBBDD habitacionConfigBBDD = servicioHabitacionConfig
 					.findById(historialBBDD.getIdHabitacionConfig());

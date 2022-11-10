@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import es.rbp.tareas_borderia.entidad.bbdd.HabitacionConfigBBDD;
 import es.rbp.tareas_borderia.entidad.bbdd.TareaConfigBBDD;
 import es.rbp.tareas_borderia.entidad.bbdd.UsuarioBBDD;
+import es.rbp.tareas_borderia.entidad.config.HabitacionConfig;
 import es.rbp.tareas_borderia.entidad.config.TareaConfig;
 import es.rbp.tareas_borderia.repositorio.RepositorioTareaConfig;
 import es.rbp.tareas_borderia.service.ServicioTareaConfig;
@@ -20,21 +21,29 @@ public class ServicioTareaConfigImpl implements ServicioTareaConfig {
 	private RepositorioTareaConfig repo;
 
 	@Override
+	public TareaConfigBBDD findById(long id) {
+		Optional<TareaConfigBBDD> optional = repo.findById(id);
+		if (optional.isEmpty())
+			return null;
+
+		return optional.get();
+	}
+
+	@Override
 	public List<TareaConfigBBDD> findByIdHabitacionConfig(long idHabitacionConfig) {
 		return repo.findByIdHabitacionConfig(idHabitacionConfig);
 	}
 
 	@Override
-	public boolean anadirTareaLimpiezaConfig(TareaConfigBBDD tareaLimpiezaConfig, UsuarioBBDD usuario) {
-		TareaConfigBBDD tareaLimpiezaConfigBBDD = new TareaConfigBBDD();
-		tareaLimpiezaConfigBBDD.setIdHabitacionConfig(tareaLimpiezaConfig.getIdHabitacionConfig());
-		tareaLimpiezaConfigBBDD.setPrecio(tareaLimpiezaConfig.getPrecio());
-		tareaLimpiezaConfigBBDD.setNombre(tareaLimpiezaConfig.getNombre());
-		tareaLimpiezaConfigBBDD.setUserAlta(usuario.getNombre());
-		tareaLimpiezaConfigBBDD.setUserMod(usuario.getNombre());
+	public boolean anadirTareaLimpiezaConfig(TareaConfig tareaConfig, HabitacionConfig habitacionConfig, UsuarioBBDD usuario) {
+		TareaConfigBBDD tareaConfigBBDD = new TareaConfigBBDD();
+		tareaConfigBBDD.setIdHabitacionConfig(habitacionConfig.getId());
+		tareaConfigBBDD.setPrecio(tareaConfig.getPrecio());
+		tareaConfigBBDD.setNombre(tareaConfig.getNombre());
+		tareaConfigBBDD.setUserAlta(usuario.getNombre());
+		tareaConfigBBDD.setUserMod(usuario.getNombre());
 
-		TareaConfigBBDD tareaLimpiezaConfigNueva = repo.save(tareaLimpiezaConfigBBDD);
-		crearTareaConfig(new TareaConfig(tareaLimpiezaConfigNueva), usuario);
+		TareaConfigBBDD tareaLimpiezaConfigNueva = repo.save(tareaConfigBBDD);
 		return tareaLimpiezaConfigNueva != null;
 	}
 

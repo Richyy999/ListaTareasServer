@@ -57,7 +57,7 @@ public class ServicioHistorialImpl implements ServicioHistorial {
 	}
 
 	@Override
-	public boolean crearHistorial(long idHabitacionConfig, String nombreHabitacion, long idUsuario) {
+	public boolean crearHistorial(long idHabitacionConfig, String nombreHabitacion) {
 		HistorialBBDD historialBBDDNuevo = new HistorialBBDD();
 
 		Optional<HabitacionConfigBBDD> optional = repoHabitacionConfig.findById(idHabitacionConfig);
@@ -70,7 +70,6 @@ public class ServicioHistorialImpl implements ServicioHistorial {
 
 		historialBBDDNuevo.setIdHabitacionConfig(idHabitacionConfig);
 		historialBBDDNuevo.setNombreHabitacion(nombreHabitacion);
-		historialBBDDNuevo.setIdUsuario(idUsuario);
 		repoHistorial.save(historialBBDDNuevo);
 		return true;
 	}
@@ -79,6 +78,9 @@ public class ServicioHistorialImpl implements ServicioHistorial {
 	public boolean modificarHistorial(long idHistorial, String nombreHabitacion) {
 		Optional<HistorialBBDD> optional = repoHistorial.findById(idHistorial);
 		if (optional.isEmpty())
+			return false;
+
+		if (repoHistorial.findByNombreHabitacion(nombreHabitacion) != null)
 			return false;
 
 		HistorialBBDD historialBBDD = optional.get();

@@ -4,9 +4,18 @@ import java.util.List;
 
 import es.rbp.tareas_borderia.entidad.bbdd.TareaConfigBBDD;
 import es.rbp.tareas_borderia.entidad.bbdd.UsuarioBBDD;
+import es.rbp.tareas_borderia.entidad.config.HabitacionConfig;
 import es.rbp.tareas_borderia.entidad.config.TareaConfig;
 
 public interface ServicioTareaConfig {
+
+	/**
+	 * Busca una tarea de configuración por su ID
+	 * 
+	 * @param id ID de la tarea de configuración a buscar
+	 * @return Tarea de configuración con el ID indicado, null si no existe
+	 */
+	TareaConfigBBDD findById(long id);
 
 	/**
 	 * Devuelve todas las tareas de configuración para una habitación de
@@ -21,11 +30,13 @@ public interface ServicioTareaConfig {
 	/**
 	 * añade una tarea de limpieza de configuración a una habitación
 	 * 
-	 * @param tareaLimpiezaConfig {@link TareaConfigBBDD} con los datos
-	 * @param usuario             usuario que realiza el alta
+	 * @param tareaConfig      {@link TareaConfig} con los datos
+	 * @param habitacionConfig {@link HabitacionConfig} al que corresponden las
+	 *                         tareas
+	 * @param usuario          usuario que realiza el alta
 	 * @return true si se ha añadido, false en caso contrario
 	 */
-	boolean anadirTareaLimpiezaConfig(TareaConfigBBDD tareaLimpiezaConfig, UsuarioBBDD usuario);
+	boolean anadirTareaLimpiezaConfig(TareaConfig tareaConfig, HabitacionConfig habitacionConfig, UsuarioBBDD usuario);
 
 	/**
 	 * Crea una tarea de configuración y la añade a la habitación de muestra

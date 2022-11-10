@@ -1,5 +1,6 @@
 package es.rbp.tareas_borderia.service.implement;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -67,10 +68,11 @@ public class ServicioHabitacionConfigImpl implements ServicioHabitacionConfig {
 		if (habitacionConfig.getId() == 0)
 			return false;
 
-		String nombre = habitacionConfigBBDDActualizada.getNombre();
+		String nombre = habitacionConfig.getNombre();
 		if (nombre != null && nombre.strip().length() > 0) {
 			habitacionConfigBBDDActualizada.setNombre(nombre);
 			habitacionConfigBBDDActualizada.setUserMod(usuario.getNombre());
+			habitacionConfigBBDDActualizada.setFechaMod(LocalDateTime.now());
 			repoHabitacionConfig.save(habitacionConfigBBDDActualizada);
 			return true;
 		}

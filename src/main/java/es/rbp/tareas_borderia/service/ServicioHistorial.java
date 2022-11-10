@@ -47,7 +47,7 @@ public interface ServicioHistorial {
 	 * @param nombreHabitacion   nombre de la habitación que se limpia
 	 * @return true si se ha creado correctamente, false en caso contrario
 	 */
-	boolean crearHistorial(long idHabitacionConfig, String nombreHabitacion, long idUsuario);
+	boolean crearHistorial(long idHabitacionConfig, String nombreHabitacion);
 
 	/**
 	 * Modifica el nombre de la habitación del historial

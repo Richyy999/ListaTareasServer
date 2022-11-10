@@ -108,6 +108,7 @@ public class ServicioDeudaImpl implements ServicioDeuda {
 			deudaBBDD.setDeudaMax(deuda.getDeudaMax());
 			actualizada = true;
 		}
+		
 		if (deuda.isAcumular() != deudaBBDD.isAcumular()) {
 			deudaBBDD.setAcumular(deuda.isAcumular());
 			actualizada = true;

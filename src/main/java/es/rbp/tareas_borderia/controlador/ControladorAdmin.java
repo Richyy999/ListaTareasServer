@@ -220,12 +220,16 @@ public class ControladorAdmin {
 		if (habitacionConfigBBDD == null)
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
+		habitacionConfig.setId(habitacionConfigBBDD.getId());
+
 		for (TareaConfig tareaConfig : habitacionConfig.getTareas()) {
-			TareaConfigBBDD tareaConfigBBDD = new TareaConfigBBDD();
-			tareaConfigBBDD.setIdHabitacionConfig(habitacionConfigBBDD.getId());
-			tareaConfigBBDD.setNombre(tareaConfig.getNombre());
-			tareaConfigBBDD.setPrecio(tareaConfig.getPrecio());
-			servicioTareaConfig.anadirTareaLimpiezaConfig(tareaConfigBBDD, usuarioBBDD);
+			TareaConfigBBDD tareaId = servicioTareaConfig.findById(tareaConfig.getId());
+
+			TareaConfig tareaConfigNueva = new TareaConfig();
+			tareaConfigNueva.setNombre(tareaId.getNombre());
+			tareaConfigNueva.setPrecio(tareaId.getPrecio());
+
+			servicioTareaConfig.anadirTareaLimpiezaConfig(tareaConfigNueva, habitacionConfig, usuarioBBDD);
 		}
 
 		List<HabitacionConfig> habitacionesConfig = getHabitacionesConfig();
@@ -256,12 +260,30 @@ public class ControladorAdmin {
 		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_MODIFICAR_HABITACION_CONFIG))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
+		// Elimino las originales
+		List<TareaConfigBBDD> tareasConfigOriginales = servicioTareaConfig
+				.findByIdHabitacionConfig(habitacionConfig.getId());
+
+		for (TareaConfigBBDD tareaConfigBBDD : tareasConfigOriginales) {
+			if (!servicioTareaConfig.eliminarTareaConfig(tareaConfigBBDD.getId()))
+				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+
+		// Creo las nuevas
+		for (TareaConfig tareaConfig : habitacionConfig.getTareas()) {
+			TareaConfigBBDD tareaId = servicioTareaConfig.findById(tareaConfig.getId());
+
+			TareaConfig tareaConfigNueva = new TareaConfig();
+			tareaConfigNueva.setNombre(tareaId.getNombre());
+			tareaConfigNueva.setPrecio(tareaId.getPrecio());
+
+			if (!servicioTareaConfig.anadirTareaLimpiezaConfig(tareaConfigNueva, habitacionConfig, usuarioBBDD))
+				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+
+		// Modifico la habitación
 		if (!servicioHabitacionConfig.modificarHabitacion(habitacionConfig, usuarioBBDD))
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-
-		for (TareaConfig tareaConfig : habitacionConfig.getTareas()) {
-			servicioTareaConfig.modificarTareaLimpiezaConfig(tareaConfig, usuarioBBDD);
-		}
 
 		List<HabitacionConfig> habitacionesConfig = getHabitacionesConfig();
 		return new ResponseEntity<List<HabitacionConfig>>(habitacionesConfig, HttpStatus.OK);
@@ -319,7 +341,7 @@ public class ControladorAdmin {
 	 */
 	@PostMapping(path = "/historial/anadir", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
 	public ResponseEntity<List<Historial>> anadirHistorial(@RequestParam(name = ID_USUARIO) Long idUsuario,
-			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody HistorialBBDD historialBBDD) {
+			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody Historial historial) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
 		if (usuarioBBDD == null)
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
@@ -330,8 +352,7 @@ public class ControladorAdmin {
 		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_CREAR_HISTORIAL))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
-		if (servicioHistorial.crearHistorial(historialBBDD.getIdHabitacionConfig(), historialBBDD.getNombreHabitacion(),
-				idUsuario))
+		if (servicioHistorial.crearHistorial(historial.getHabitacionConfig().getId(), historial.getNombreHabitacion()))
 			return new ResponseEntity<List<Historial>>(getHistorial(), HttpStatus.OK);
 
 		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -373,7 +394,7 @@ public class ControladorAdmin {
 	 * @return lista con todos los jistoriales
 	 */
 	@DeleteMapping(path = "/historial/eliminar", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
-	public ResponseEntity<List<Historial>> eliminarHistoriales(@RequestParam(name = ID_USUARIO) Long idUsuario,
+	public ResponseEntity<List<Historial>> eliminarHistorial(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestParam(name = "historial") Long idHistorial, @RequestHeader(name = CABECERA_TOKEN) String token) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
 		if (usuarioBBDD == null)
@@ -508,6 +529,7 @@ public class ControladorAdmin {
 	private List<TareaConfig> getTareasConfig() {
 		List<TareaConfigBBDD> tareasConfigBBDD = servicioTareaConfig
 				.findByIdHabitacionConfig(HabitacionConfigBBDD.ID_HABITACION_MUESTRA);
+
 		List<TareaConfig> tareasConfig = new ArrayList<>();
 		for (TareaConfigBBDD tareaConfigBBDD : tareasConfigBBDD) {
 			TareaConfig tareaConfig = new TareaConfig(tareaConfigBBDD);
@@ -526,10 +548,12 @@ public class ControladorAdmin {
 	private List<HabitacionConfig> getHabitacionesConfig() {
 		List<HabitacionConfigBBDD> habitacionesConfigBBDD = servicioHabitacionConfig.findAll();
 		List<HabitacionConfig> habitacionesConfig = new ArrayList<>();
+
 		for (HabitacionConfigBBDD habitacionConfigBBDD : habitacionesConfigBBDD) {
 			List<TareaConfigBBDD> tareasConfigBBDD = servicioTareaConfig
 					.findByIdHabitacionConfig(habitacionConfigBBDD.getId());
 			List<TareaConfig> tareasConfig = new ArrayList<>();
+
 			for (TareaConfigBBDD tareaConfigBBDD : tareasConfigBBDD) {
 				TareaConfig tareaConfig = new TareaConfig(tareaConfigBBDD);
 				tareasConfig.add(tareaConfig);
@@ -551,7 +575,9 @@ public class ControladorAdmin {
 		List<Historial> historiales = new ArrayList<>();
 		for (HistorialBBDD historialBBDD : historialesBBDD) {
 			UsuarioBBDD usuarioBBDDHistorial = servicioUsuario.findById(historialBBDD.getIdUsuario());
-			Usuario usuarioHistorial = new Usuario(usuarioBBDDHistorial);
+			Usuario usuarioHistorial = null;
+			if (usuarioBBDDHistorial != null)
+				usuarioHistorial = new Usuario(usuarioBBDDHistorial);
 
 			HabitacionConfigBBDD habitacionConfigBBDD = servicioHabitacionConfig
 					.findById(historialBBDD.getIdHabitacionConfig());
