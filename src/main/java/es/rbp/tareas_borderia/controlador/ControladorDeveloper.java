@@ -69,6 +69,8 @@ public class ControladorDeveloper {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
 		DeudaConfigBBDD deudaConfigBBDD = servicioDeudaConfig.getUltimaDeudaConfig();
+		if (deudaConfigBBDD == null)
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 
 		return new ResponseEntity<DeudaConfig>(new DeudaConfig(deudaConfigBBDD), HttpStatus.OK);
 	}
@@ -131,37 +133,6 @@ public class ControladorDeveloper {
 			DeudaConfigBBDD deudaConfigBBDD = servicioDeudaConfig.getUltimaDeudaConfig();
 			return new ResponseEntity<DeudaConfig>(new DeudaConfig(deudaConfigBBDD), HttpStatus.OK);
 		}
-
-		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-	}
-
-	// -------------------- DEUDA --------------------
-
-	/**
-	 * Modifica la deuda de un usuario
-	 * 
-	 * @param idUsuario  id del usuario que desea modificar la deuda
-	 * @param idAfectado id del usuario al que pertenece la deuda
-	 * @param token      token único del usuario para identificarlo
-	 * @param deuda      deuda con los datos actualizados
-	 * @return Lista con todos los usuarios
-	 */
-	@PutMapping(path = "/deuda/modificar", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
-	public ResponseEntity<List<Usuario>> modificarDeuda(@RequestParam(name = ID_USUARIO) Long idUsuario,
-			@RequestParam(name = "usuario") Long idAfectado, @RequestHeader(name = CABECERA_TOKEN) String token,
-			@RequestBody Deuda deuda) {
-		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
-		if (usuarioBBDD == null)
-			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-
-		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
-			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-
-		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_MODIFICAR_DEUDA, idAfectado))
-			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-
-		if (servicioDeuda.modificarDeuda(idAfectado, deuda))
-			return new ResponseEntity<List<Usuario>>(getUsuarios(), HttpStatus.OK);
 
 		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 	}
@@ -316,6 +287,35 @@ public class ControladorDeveloper {
 			usuarios = getUsuarios();
 
 		return new ResponseEntity<List<Usuario>>(usuarios, HttpStatus.OK);
+	}
+
+	/**
+	 * Modifica la deuda de un usuario
+	 * 
+	 * @param idUsuario  id del usuario que desea modificar la deuda
+	 * @param idAfectado id del usuario al que pertenece la deuda
+	 * @param token      token único del usuario para identificarlo
+	 * @param deuda      deuda con los datos actualizados
+	 * @return Lista con todos los usuarios
+	 */
+	@PutMapping(path = "/deuda/modificar", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
+	public ResponseEntity<List<Usuario>> modificarDeuda(@RequestParam(name = ID_USUARIO) Long idUsuario,
+			@RequestParam(name = "usuario") Long idAfectado, @RequestHeader(name = CABECERA_TOKEN) String token,
+			@RequestBody Deuda deuda) {
+		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_MODIFICAR_DEUDA, idAfectado))
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (servicioDeuda.modificarDeuda(idAfectado, deuda))
+			return new ResponseEntity<List<Usuario>>(getUsuarios(), HttpStatus.OK);
+
+		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 	}
 
 	@PutMapping(path = "/usuario/modificar", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
