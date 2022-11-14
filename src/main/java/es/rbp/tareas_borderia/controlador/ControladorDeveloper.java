@@ -258,7 +258,7 @@ public class ControladorDeveloper {
 	 *         devuelve una lista con todos los usuarios
 	 */
 	@PutMapping(path = "/usuario/cambiar-pwd", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
-	public ResponseEntity<List<Usuario>> cambiarContrasena(@RequestParam(name = ID_USUARIO) Long idUsuario,
+	public ResponseEntity<Usuario> cambiarContrasena(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestHeader(name = CABECERA_TOKEN) String token, @RequestBody UsuarioBBDD usuarioAfectado) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
 		if (usuarioBBDD == null)
@@ -279,14 +279,7 @@ public class ControladorDeveloper {
 		if (usuarioContrasenaNueva == null)
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 
-		List<Usuario> usuarios;
-		if (idUsuario == usuarioAfectado.getId()) {
-			usuarios = new ArrayList<Usuario>();
-			usuarios.add(new Usuario(usuarioContrasenaNueva));
-		} else
-			usuarios = getUsuarios();
-
-		return new ResponseEntity<List<Usuario>>(usuarios, HttpStatus.OK);
+		return new ResponseEntity<Usuario>(new Usuario(usuarioContrasenaNueva), HttpStatus.OK);
 	}
 
 	/**
@@ -299,7 +292,7 @@ public class ControladorDeveloper {
 	 * @return Lista con todos los usuarios
 	 */
 	@PutMapping(path = "/deuda/modificar", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
-	public ResponseEntity<List<Usuario>> modificarDeuda(@RequestParam(name = ID_USUARIO) Long idUsuario,
+	public ResponseEntity<Usuario> modificarDeuda(@RequestParam(name = ID_USUARIO) Long idUsuario,
 			@RequestParam(name = "usuario") Long idAfectado, @RequestHeader(name = CABECERA_TOKEN) String token,
 			@RequestBody Deuda deuda) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
@@ -312,10 +305,12 @@ public class ControladorDeveloper {
 		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_MODIFICAR_DEUDA, idAfectado))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
-		if (servicioDeuda.modificarDeuda(idAfectado, deuda))
-			return new ResponseEntity<List<Usuario>>(getUsuarios(), HttpStatus.OK);
+		if (!servicioDeuda.modificarDeuda(idAfectado, deuda))
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
-		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		UsuarioBBDD usuarioDeuda = servicioUsuario.findById(idAfectado);
+
+		return new ResponseEntity<>(new Usuario(usuarioDeuda), HttpStatus.OK);
 	}
 
 	@PutMapping(path = "/usuario/modificar", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)

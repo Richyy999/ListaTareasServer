@@ -1,6 +1,7 @@
 package es.rbp.tareas_borderia.entidad;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 import es.rbp.tareas_borderia.entidad.bbdd.UsuarioBBDD;
 
@@ -21,6 +22,9 @@ public class Usuario implements Serializable {
 	private String token;
 	private String nombre;
 
+	private LocalDateTime fechaCreacion;
+	private LocalDateTime ultimaAccion;
+
 	public Usuario() {
 	}
 
@@ -35,6 +39,9 @@ public class Usuario implements Serializable {
 
 		this.nombre = usuarioBBDD.getNombre();
 		this.token = usuarioBBDD.getToken();
+
+		this.fechaCreacion = usuarioBBDD.getFechaCreacion();
+		this.ultimaAccion = usuarioBBDD.getUltimaAccion();
 	}
 
 	public long getId() {
@@ -107,5 +114,21 @@ public class Usuario implements Serializable {
 
 	public void setNombre(String nombre) {
 		this.nombre = nombre;
+	}
+
+	public LocalDateTime getFechaCreacion() {
+		return fechaCreacion;
+	}
+
+	public void setFechaCreacion(LocalDateTime fechaCreacion) {
+		this.fechaCreacion = fechaCreacion;
+	}
+
+	public LocalDateTime getUltimaAccion() {
+		return ultimaAccion;
+	}
+
+	public void setUltimaAccion(LocalDateTime ultimaAccion) {
+		this.ultimaAccion = ultimaAccion;
 	}
 }
