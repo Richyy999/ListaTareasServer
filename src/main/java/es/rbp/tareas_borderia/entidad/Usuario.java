@@ -36,6 +36,8 @@ public class Usuario implements Serializable {
 		this.cambiarPasswd = usuarioBBDD.isCambiarPasswd();
 		this.terminosAceptados = usuarioBBDD.isTerminosAceptados();
 		this.habilitado = usuarioBBDD.isHabilitado();
+		
+		this.bonificacion = usuarioBBDD.getBonificacion();
 
 		this.nombre = usuarioBBDD.getNombre();
 		this.token = usuarioBBDD.getToken();
