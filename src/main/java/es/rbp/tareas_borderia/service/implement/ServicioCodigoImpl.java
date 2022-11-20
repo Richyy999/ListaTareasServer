@@ -22,8 +22,8 @@ public class ServicioCodigoImpl implements ServicioCodigo {
 	}
 
 	@Override
-	public Codigo findByTipoAndCodigo(String tipo, int codigo) {
-		return repo.findByCodigoAndTipoCodigo(codigo, tipo);
+	public Codigo findByCodigo(int codigo) {
+		return repo.findByCodigo(codigo);
 	}
 
 	@Override
@@ -31,7 +31,7 @@ public class ServicioCodigoImpl implements ServicioCodigo {
 		if (codigo.getId() > 0)
 			return false;
 
-		Codigo codigoBBDD = repo.findByCodigoAndTipoCodigo(codigo.getCodigo(), codigo.getTipoCodigo());
+		Codigo codigoBBDD = repo.findByCodigo(codigo.getCodigo());
 		if (codigoBBDD != null)
 			return false;
 

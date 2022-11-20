@@ -6,5 +6,5 @@ import es.rbp.tareas_borderia.entidad.bbdd.Codigo;
 
 public interface RepositorioCodigo extends JpaRepository<Codigo, Long> {
 
-	Codigo findByCodigoAndTipoCodigo(int codigo, String tipoCodigo);
+	Codigo findByCodigo(int codigo);
 }

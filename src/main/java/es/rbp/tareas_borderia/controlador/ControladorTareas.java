@@ -176,8 +176,9 @@ public class ControladorTareas {
 		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_ANADIR_TAREA))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
-		Codigo codigo = tareaEspecial.getCodigo();
-		if (servicioCodigo.findByTipoAndCodigo(codigo.getTipoCodigo(), codigo.getCodigo()) == null)
+		Codigo codigoTarea = tareaEspecial.getCodigo();
+		Codigo codigo = servicioCodigo.findByCodigo(codigoTarea.getCodigo());
+		if (codigo == null || !codigo.getTipoCodigo().equals(Codigo.TIPO_TAREA_ESPECIAL))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
 		Habitacion habitacion = tareaEspecial.getHabitacion();
@@ -285,7 +286,7 @@ public class ControladorTareas {
 	 */
 	@GetMapping(path = "/historial", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
 	public ResponseEntity<List<Historial>> getHistorial(@RequestParam(name = ID_USUARIO) Long idUsuario,
-			@RequestParam(name = "idHabitacion", required = false) Long idHabitacion,
+			@RequestParam(name = "habitacion", required = false) Long idHabitacion,
 			@RequestHeader(name = CABECERA_TOKEN) String token) {
 		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
 		if (usuarioBBDD == null)

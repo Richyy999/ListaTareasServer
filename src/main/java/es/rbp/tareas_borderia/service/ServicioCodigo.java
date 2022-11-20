@@ -14,14 +14,13 @@ public interface ServicioCodigo {
 	List<Codigo> findAll();
 
 	/**
-	 * Busca un código a partir de su tipo y código
+	 * Busca un código a partir de su código
 	 * 
-	 * @param tipo   tipo de código
 	 * @param codigo secuencia numérica que conforma el código
 	 * @return Código que posea la misma secuencia y tipo, null si no hay
 	 *         coincidencias
 	 */
-	Codigo findByTipoAndCodigo(String tipo, int codigo);
+	Codigo findByCodigo(int codigo);
 
 	/**
 	 * Crea un código nuevo
