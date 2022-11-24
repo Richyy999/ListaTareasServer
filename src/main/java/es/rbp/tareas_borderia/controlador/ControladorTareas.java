@@ -20,6 +20,7 @@ import es.rbp.tareas_borderia.entidad.Habitacion;
 import es.rbp.tareas_borderia.entidad.Historial;
 import es.rbp.tareas_borderia.entidad.IDWrapper;
 import es.rbp.tareas_borderia.entidad.Mes;
+import es.rbp.tareas_borderia.entidad.Movimiento;
 import es.rbp.tareas_borderia.entidad.Tarea;
 import es.rbp.tareas_borderia.entidad.TareaEspecial;
 import es.rbp.tareas_borderia.entidad.Termino;
@@ -30,6 +31,7 @@ import es.rbp.tareas_borderia.entidad.bbdd.HabitacionBBDD;
 import es.rbp.tareas_borderia.entidad.bbdd.HabitacionConfigBBDD;
 import es.rbp.tareas_borderia.entidad.bbdd.HistorialBBDD;
 import es.rbp.tareas_borderia.entidad.bbdd.MesBBDD;
+import es.rbp.tareas_borderia.entidad.bbdd.MovimientoBBDD;
 import es.rbp.tareas_borderia.entidad.bbdd.TareaBBDD;
 import es.rbp.tareas_borderia.entidad.bbdd.TareaConfigBBDD;
 import es.rbp.tareas_borderia.entidad.bbdd.TerminoBBDD;
@@ -42,6 +44,7 @@ import es.rbp.tareas_borderia.service.ServicioHabitacion;
 import es.rbp.tareas_borderia.service.ServicioHabitacionConfig;
 import es.rbp.tareas_borderia.service.ServicioHistorial;
 import es.rbp.tareas_borderia.service.ServicioMes;
+import es.rbp.tareas_borderia.service.ServicioMovimiento;
 import es.rbp.tareas_borderia.service.ServicioTarea;
 import es.rbp.tareas_borderia.service.ServicioTareaConfig;
 import es.rbp.tareas_borderia.service.ServicioTermino;
@@ -84,6 +87,9 @@ public class ControladorTareas {
 
 	@Autowired
 	private ServicioTermino servicioTermino;
+
+	@Autowired
+	private ServicioMovimiento servicioMovimiento;
 
 	// -------------------- TAREAS --------------------
 
@@ -329,12 +335,15 @@ public class ControladorTareas {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
 		List<Long> idHabitaciones = ids.getIds();
+		double cantidadCobrada = 0;
 		for (long idHabitacion : idHabitaciones) {
 			List<TareaBBDD> tarreasBBDD = servicioTarea.getTareas(idHabitacion);
 			for (TareaBBDD tareaBBDD : tarreasBBDD) {
-				servicioTarea.cobrarTarea(tareaBBDD.getId());
+				cantidadCobrada += servicioTarea.cobrarTarea(tareaBBDD.getId());
 			}
 		}
+
+		servicioMovimiento.crearMovimiento(usuarioBBDD, Movimiento.TIPO_COBRO, cantidadCobrada);
 
 		return new ResponseEntity<List<Mes>>(getMeses(idUsuario), HttpStatus.OK);
 	}
@@ -361,10 +370,12 @@ public class ControladorTareas {
 		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_COBRAR))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
-		if (servicioTarea.cobrarCantidad(cantidad, idUsuario))
-			return new ResponseEntity<List<Mes>>(getMeses(idUsuario), HttpStatus.OK);
+		if (!servicioTarea.cobrarCantidad(cantidad, idUsuario))
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
-		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		servicioMovimiento.crearMovimiento(usuarioBBDD, Movimiento.TIPO_COBRO, cantidad);
+
+		return new ResponseEntity<List<Mes>>(getMeses(idUsuario), HttpStatus.OK);
 	}
 
 	// -------------------- DEUDA --------------------
@@ -434,6 +445,8 @@ public class ControladorTareas {
 		if (deudaBBDD == null)
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
+		servicioMovimiento.crearMovimiento(usuarioBBDD, Movimiento.TIPO_DEUDA, cantidadDeuda);
+
 		return new ResponseEntity<List<Mes>>(getMeses(usuarioBBDD.getId()), HttpStatus.OK);
 	}
 
@@ -467,6 +480,30 @@ public class ControladorTareas {
 		}
 
 		return new ResponseEntity<List<Termino>>(terminos, HttpStatus.OK);
+	}
+
+	// -------------------- MOVIMIENTOS --------------------
+
+	@GetMapping(path = "/movimientos", headers = CABECERA_TOKEN, produces = PRODUCES_JSON)
+	public ResponseEntity<List<Movimiento>> getMovimientos(@RequestParam(name = ID_USUARIO) Long idUsuario,
+			@RequestHeader(name = CABECERA_TOKEN) String token) {
+		UsuarioBBDD usuarioBBDD = servicioUsuario.findByIdAndToken(idUsuario, token);
+		if (usuarioBBDD == null)
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		if (!servicioUsuario.tieneSesionActiva(usuarioBBDD))
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+		if (!servicioUsuario.estaAutorizado(usuarioBBDD, ACCION_VER_MOVIMIENTOS))
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+		List<MovimientoBBDD> movimientosBBDD = servicioMovimiento.findByIdUsuario(usuarioBBDD.getId());
+		List<Movimiento> movimientos = new ArrayList<Movimiento>();
+		for (MovimientoBBDD movimientoBBDD : movimientosBBDD) {
+			movimientos.add(new Movimiento(movimientoBBDD));
+		}
+
+		return new ResponseEntity<List<Movimiento>>(movimientos, HttpStatus.OK);
 	}
 
 	// -------------------- METODOS PRIVADOS --------------------

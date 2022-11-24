@@ -26,6 +26,7 @@ public final class Acciones {
 		public static final int ACCION_VER_DEUDA = 108;
 		public static final int ACCION_AUMENTAR_DEUDA = 109;
 		public static final int ACCION_VER_TERMINOS = 110;
+		public static final int ACCION_VER_MOVIMIENTOS = 111;
 	}
 
 	public static final class Admin {

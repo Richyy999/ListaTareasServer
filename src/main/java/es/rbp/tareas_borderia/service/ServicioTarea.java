@@ -41,8 +41,9 @@ public interface ServicioTarea {
 	 * Cobra la tarea
 	 * 
 	 * @param idTarea id de la tarea a cobrar
+	 * @return cantidad cobrada
 	 */
-	void cobrarTarea(long idTarea);
+	double cobrarTarea(long idTarea);
 
 	/**
 	 * Cobra una cantidad concreta modificando el precio de las tareas si es

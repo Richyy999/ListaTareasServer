@@ -71,6 +71,9 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 		case ACCION_VER_TERMINOS:
 			return autorizarVerTermino(usuario);
 
+		case ACCION_VER_MOVIMIENTOS:
+			return autorizarVerMovimientos(usuario);
+
 		case ACCION_VER_TAREAS_CONFIG:
 			return autorizarVerTareaConfig(usuario);
 
@@ -459,6 +462,16 @@ public class ServicioUsuarioImpl implements ServicioUsuario {
 	 * @return true si estáautorizado, false en caso contrario
 	 */
 	private boolean autorizarVerTermino(UsuarioBBDD usuario) {
+		return existe(usuario);
+	}
+
+	/**
+	 * Verifica si un usuario puede ver sus movimientos
+	 * 
+	 * @param usuario usuario que desea ver sus movimientos
+	 * @return true si está autorizado, false en caso contrario
+	 */
+	private boolean autorizarVerMovimientos(UsuarioBBDD usuario) {
 		return existe(usuario);
 	}
 

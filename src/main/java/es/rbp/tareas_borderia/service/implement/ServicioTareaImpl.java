@@ -45,19 +45,22 @@ public class ServicioTareaImpl implements ServicioTarea {
 	}
 
 	@Override
-	public void cobrarTarea(long idTarea) {
+	public double cobrarTarea(long idTarea) {
 		Optional<TareaBBDD> optional = repoTareas.findById(idTarea);
 		if (optional.isEmpty())
-			return;
+			return 0.0;
 
 		TareaBBDD tarea = optional.get();
 		if (tarea.isCobrada())
-			return;
+			return 0.0;
 
 		tarea.setCobrada(true);
-		tarea.setPrecioPagado(tarea.getPrecioSinPagar());
+		double precio = tarea.getPrecioSinPagar();
+		tarea.setPrecioPagado(precio);
 		tarea.setPrecioSinPagar(0);
 		repoTareas.save(tarea);
+
+		return precio;
 	}
 
 	@Override
