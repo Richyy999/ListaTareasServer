@@ -17,10 +17,12 @@ public class TareaBBDD {
 	@Column(name = "id_habitacion", nullable = false)
 	private long idHabitacion;
 
-	@Column(name = "precioSinPagar", nullable = false)
+	@Column(name = "precio_sin_pagar", nullable = false)
 	private double precioSinPagar;
-	@Column(name = "precioPagado", nullable = false)
+	@Column(name = "precio_pagado", nullable = false)
 	private double precioPagado;
+	@Column(name = "precio_original", nullable = false)
+	private double precioOriginal;
 
 	@Column(name = "cobrada", nullable = false)
 	private boolean cobrada;
@@ -58,6 +60,14 @@ public class TareaBBDD {
 
 	public void setPrecioPagado(double precioPagado) {
 		this.precioPagado = precioPagado;
+	}
+
+	public double getPrecioOriginal() {
+		return precioOriginal;
+	}
+
+	public void setPrecioOriginal(double precioOriginal) {
+		this.precioOriginal = precioOriginal;
 	}
 
 	public boolean isCobrada() {

@@ -70,6 +70,6 @@ public class ServicioMovimientoImpl implements ServicioMovimiento {
 		DeudaBBDD deuda = repoDeuda.findByIdUsuario(usuario.getId());
 		saldo -= deuda.getDeuda();
 
-		return saldo;
+		return Math.round(saldo * 100.0) / 100.0;
 	}
 }

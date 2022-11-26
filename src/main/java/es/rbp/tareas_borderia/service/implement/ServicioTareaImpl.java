@@ -33,6 +33,7 @@ public class ServicioTareaImpl implements ServicioTarea {
 		TareaBBDD tareaLimpiezaBBDD = new TareaBBDD();
 		tareaLimpiezaBBDD.setNombre(tareaLimpieza.getNombre());
 		tareaLimpiezaBBDD.setPrecioSinPagar(tareaLimpieza.getPrecioSinPagar());
+		tareaLimpiezaBBDD.setPrecioOriginal(tareaLimpieza.getPrecioSinPagar());
 		tareaLimpiezaBBDD.setPrecioPagado(tareaLimpieza.getPrecioPagado());
 		tareaLimpiezaBBDD.setCobrada(tareaLimpieza.isCobrada());
 		tareaLimpiezaBBDD.setIdHabitacion(idHabitacion);
@@ -56,7 +57,7 @@ public class ServicioTareaImpl implements ServicioTarea {
 
 		tarea.setCobrada(true);
 		double precio = tarea.getPrecioSinPagar();
-		tarea.setPrecioPagado(precio);
+		tarea.setPrecioPagado(tarea.getPrecioOriginal());
 		tarea.setPrecioSinPagar(0);
 		repoTareas.save(tarea);
 
@@ -79,7 +80,7 @@ public class ServicioTareaImpl implements ServicioTarea {
 
 			if (cantidadSinCobrar >= precioSinPagar) {
 				tarea.setCobrada(true);
-				tarea.setPrecioPagado(precioSinPagar);
+				tarea.setPrecioPagado(tarea.getPrecioOriginal());
 				tarea.setPrecioSinPagar(0);
 				cantidadSinCobrar -= precioSinPagar;
 			} else if (cantidadSinCobrar < precioSinPagar) {
@@ -136,6 +137,6 @@ public class ServicioTareaImpl implements ServicioTarea {
 			total += tarea.getPrecioSinPagar();
 		}
 
-		return total;
+		return Math.round(total * 100.0) / 100.0;
 	}
 }
