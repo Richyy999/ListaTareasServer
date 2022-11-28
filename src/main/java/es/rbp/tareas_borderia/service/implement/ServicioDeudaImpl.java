@@ -43,13 +43,14 @@ public class ServicioDeudaImpl implements ServicioDeuda {
 			if (deuda >= tarea.getPrecioSinPagar()) {
 				deuda -= tarea.getPrecioSinPagar();
 				tarea.setCobrada(true);
-				tarea.setPrecioPagado(tarea.getPrecioSinPagar());
+				tarea.setPrecioPagado(tarea.getPrecioPagado() + tarea.getPrecioSinPagar());
 				tarea.setPrecioSinPagar(0);
 			} else if (deuda < tarea.getPrecioSinPagar()) {
-				deuda = 0;
 				double precioNuevo = tarea.getPrecioSinPagar() - deuda;
+				precioNuevo = Math.round(precioNuevo * 100.0) / 100.0;
 				tarea.setPrecioSinPagar(precioNuevo);
-				tarea.setPrecioPagado(deuda);
+				tarea.setPrecioPagado(tarea.getPrecioPagado() + deuda);
+				deuda = 0;
 			}
 
 			deudaBBDD.setDeuda(deuda);
@@ -108,7 +109,7 @@ public class ServicioDeudaImpl implements ServicioDeuda {
 			deudaBBDD.setDeudaMax(deuda.getDeudaMax());
 			actualizada = true;
 		}
-		
+
 		if (deuda.isAcumular() != deudaBBDD.isAcumular()) {
 			deudaBBDD.setAcumular(deuda.isAcumular());
 			actualizada = true;

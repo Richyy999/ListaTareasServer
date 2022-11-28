@@ -21,8 +21,6 @@ public class TareaBBDD {
 	private double precioSinPagar;
 	@Column(name = "precio_pagado", nullable = false)
 	private double precioPagado;
-	@Column(name = "precio_original", nullable = false)
-	private double precioOriginal;
 
 	@Column(name = "cobrada", nullable = false)
 	private boolean cobrada;
@@ -60,14 +58,6 @@ public class TareaBBDD {
 
 	public void setPrecioPagado(double precioPagado) {
 		this.precioPagado = precioPagado;
-	}
-
-	public double getPrecioOriginal() {
-		return precioOriginal;
-	}
-
-	public void setPrecioOriginal(double precioOriginal) {
-		this.precioOriginal = precioOriginal;
 	}
 
 	public boolean isCobrada() {
