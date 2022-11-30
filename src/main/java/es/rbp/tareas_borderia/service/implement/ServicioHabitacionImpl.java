@@ -57,6 +57,11 @@ public class ServicioHabitacionImpl implements ServicioHabitacion {
 
 		List<TareaBBDD> tareasLimpieza = repoTarea.findByIdHabitacion(idHabitacion);
 		for (TareaBBDD tarea : tareasLimpieza) {
+			if (tarea.getPrecioPagado() > 0)
+				return false;
+		}
+
+		for (TareaBBDD tarea : tareasLimpieza) {
 			repoTarea.delete(tarea);
 		}
 
