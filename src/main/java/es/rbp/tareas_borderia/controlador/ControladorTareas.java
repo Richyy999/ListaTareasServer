@@ -1,6 +1,7 @@
 package es.rbp.tareas_borderia.controlador;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -498,10 +499,13 @@ public class ControladorTareas {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
 		List<MovimientoBBDD> movimientosBBDD = servicioMovimiento.findByIdUsuario(usuarioBBDD.getId());
+		Collections.reverse(movimientosBBDD);
+		
 		List<Movimiento> movimientos = new ArrayList<Movimiento>();
-		for (MovimientoBBDD movimientoBBDD : movimientosBBDD) {
-			movimientos.add(new Movimiento(movimientoBBDD));
+		for (int i = 0; i < 100; i++) {
+			movimientos.add(new Movimiento(movimientosBBDD.get(i)));
 		}
+
 
 		return new ResponseEntity<List<Movimiento>>(movimientos, HttpStatus.OK);
 	}
