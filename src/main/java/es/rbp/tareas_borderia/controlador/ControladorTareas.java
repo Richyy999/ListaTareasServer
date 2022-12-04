@@ -500,12 +500,12 @@ public class ControladorTareas {
 
 		List<MovimientoBBDD> movimientosBBDD = servicioMovimiento.findByIdUsuario(usuarioBBDD.getId());
 		Collections.reverse(movimientosBBDD);
-		
+
 		List<Movimiento> movimientos = new ArrayList<Movimiento>();
-		for (int i = 0; i < 100; i++) {
+		int max = movimientosBBDD.size() >= 100 ? 100 : movimientosBBDD.size();
+		for (int i = 0; i < max; i++) {
 			movimientos.add(new Movimiento(movimientosBBDD.get(i)));
 		}
-
 
 		return new ResponseEntity<List<Movimiento>>(movimientos, HttpStatus.OK);
 	}
